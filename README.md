@@ -114,7 +114,7 @@ For the final verison, we are aiming to complete the rest of the functionality f
 
 Our proposed technology stack is outlined as follows:
 
-Front-end technology:
+**Front-end technology:**
 
 - React
     - Frontend framework
@@ -122,7 +122,7 @@ Front-end technology:
 - Redux
     - Used for client-side state management (e.g. managing game states for each client)
 
-Back-end technology:
+**Back-end technology:**
 
 - NodeJS
     - Handles backend functionality
@@ -133,13 +133,13 @@ Back-end technology:
     - Can return selective amounts of content in a single request without much overhead
         - Useful for returning game states to all clients
 
-Database technology:
+**Database technology:**
 
 - MongoDB
     - Maze tiles will be stored in 2D JSON arrays
     - Having a NoSQL database will be advantageous when working with reading and writing lots of JSON data
 
-Deployment technology:
+**Deployment technology:**
 
 - Kubernetes
     - Use for deployments and container orchestration to ensure high availability/scalability
