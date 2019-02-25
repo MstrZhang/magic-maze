@@ -12,8 +12,6 @@ Web-implementation developed by the team of:
 
 ## Project Description
 
-<!-- does the description need supplementary diagrams? -->
-
 ### Overview
 
 [Magic Maze](https://boardgamegeek.com/boardgame/209778/magic-maze) is a real-time cooperative table-top game. Our implementation of the game will be for only 4 players and features the main, simplest "scenario" of the game.
@@ -79,31 +77,36 @@ When the players are in the lobby or have the ability to communicate via the **T
 
 ## Features of Beta Version
 
-<!--
-    TODO: write milestones for beta version
+For the beta version, we are aiming to complete the basic game functionality for only a single player. Overall, our team is aiming to accomplish the following tasks:
 
-    some ideas:
-        - having basic game functionality
-        - have game working for a single player
-            - perhaps need to move things into final verison to make beta more easily achievable
--->
-Under construction
+- Having basic game functionality for a single player
+    - Ensuring that all the game mechanics work for a single player
+        - Character movement
+        - Special movement (e.g. vortex warping, escalator movement, maze searching, etc...)
+        - Synchronization with a single player and the timer
+    - Ensuring that maze generation works for a single player
+        - Ensuring that maze tiles line up after being searched
+        - Ensuring that the whole maze renders properly for a single player
+
+Overall, we will aim to develop a playable game for a single player and leave networking challenges to be completed for the final version
 
 ---
 
 ## Features of the Final Version
 
-<!-- 
-    TODO: write milestones for final version
+For the final verison, we are aiming to complete the rest of the functionality for the game being the implementation of all 4 players playing concurrently as well as services such as the lobby and chat services and functionality. Overall, we are aiming to accomplish the following tasks:
 
-    some ideas:
-        - having 4-players implemented
-        - chat service functionality
-        - lobby functionality
-            - register/login accounts
-            - creating and joining lobbies
--->
-Under construction
+- Having 4-players implemented:
+    - Ensuring that all 4-players can move pieces and act concurrently
+    - Ensuring that the game still operates as it did before but with 3 additional players
+- Chat service functionality:
+    - Having chat functionality in the lobby
+    - Having chat functionality in game when granted the ability by the **TIME SQUARE**
+    - Pinging other players to indicate that you wish for them to make an action
+- Lobby functionality:
+    - Allowing players to create lobbies
+    - Allowing players to join open lobbies
+    - Allowing players to create games in different lobbies
 
 ---
 
@@ -111,23 +114,37 @@ Under construction
 
 Our proposed technology stack is outlined as follows:
 
-<!-- TODO: write some descriptions for why we chose to use technologies -->
-
 Front-end technology:
 
 - React
+    - Frontend framework
+    - Used for user interface, client-side scripting, etc
 - Redux
-- GraphQL?
+    - Used for client-side state management (e.g. managing game states for each client)
 
 Back-end technology:
 
 - NodeJS
+    - Handles backend functionality
+    - Handles API calls
+- GraphQL
+    - Application querying language
+    - Will use in place of RESTful communication
+    - Can return selective amounts of content in a single request without much overhead
+        - Useful for returning game states to all clients
 
 Database technology:
 
 - MongoDB
     - Maze tiles will be stored in 2D JSON arrays
-    - Having a NoSQL database will be advantageous when working with pushing and pulling lots of JSON data
+    - Having a NoSQL database will be advantageous when working with reading and writing lots of JSON data
+
+Deployment technology:
+
+- Kubernetes
+    - Use for deployments and container orchestration to ensure high availability/scalability
+- Docker
+    - Containerize each component of the application to ensure modularity and reusability
 
 ---
 
