@@ -1,0 +1,30 @@
+{
+  "name": "magicmaze-server",
+  "version": "1.0.0",
+  "description": "magic maze backend",
+  "main": "index.js",
+  "devDependencies": {
+    "eslint": "^5.14.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0"
+  },
+  "dependencies": {
+    "apollo-server-express": "^2.4.8",
+    "express": "^4.16.4",
+    "graphql": "^14.1.1"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UTSCC09/project-magicmaze.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/UTSCC09/project-magicmaze/issues"
+  },
+  "homepage": "https://github.com/UTSCC09/project-magicmaze#readme"
+}
