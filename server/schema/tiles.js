@@ -4,52 +4,62 @@ module.exports = gql`
   interface Tile {
     _id: ID!
     coordinates: Coordinates
-    neighbours: [Tile!]
+    neighbours: [Tile]
   }
 
   type Entry implements Tile {
     _id: ID!
     coordinates: Coordinates
-    neighbours: [Tile!]
+    neighbours: [Tile]
   }
 
   type Wall implements Tile {
     _id: ID!
     coordinates: Coordinates
-    neighbours: [Tile!]
+    neighbours: [Tile]
   }
 
   type Escalator implements Tile {
     _id: ID!
     coordinates: Coordinates
-    neighbours: [Tile!]
+    neighbours: [Tile]
   }
 
   type Vortex implements Tile {
     _id: ID!
     coordinates: Coordinates
-    neighbours: [Tile!]
+    neighbours: [Tile]
     colour: String!
   }
 
-  type Connector implements Tile {
+  type Search implements Tile {
     _id: ID!
     coordinates: Coordinates
-    neighbours: [Tile!]
+    neighbours: [Tile]
     colour: String!
+    used: Boolean!
   }
 
   type Item implements Tile {
     _id: ID!
     coordinates: Coordinates
-    neighbours: [Tile!]
+    neighbours: [Tile]
     colour: String!
+    claimed: Boolean!
+  }
+
+  type Time implements Tile {
+    _id: ID!
+    coordinates: Coordinates
+    neighbours: [Tile]
+    used: Boolean!
   }
 
   type Exit implements Tile {
     _id: ID!
     coordinates: Coordinates
-    neighbours: [Tile!]
+    neighbours: [Tile]
     colour: String!
+    escaped: Boolean!
   }
 `;
