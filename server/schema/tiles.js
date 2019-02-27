@@ -1,63 +1,55 @@
 const { gql } = require('apollo-server-express');
 
-module.exports = {
-  typeDefs: gql`
-    scalar Date
+module.exports = gql`
+  interface Tile {
+    _id: ID!
+    coordinates: Coordinates
+    neighbours: [Tile!]
+  }
 
-    type Subscription {
-    }
+  type Entry implements Tile {
+    _id: ID!
+    coordinates: Coordinates
+    neighbours: [Tile!]
+  }
 
-    type Query {
+  type Wall implements Tile {
+    _id: ID!
+    coordinates: Coordinates
+    neighbours: [Tile!]
+  }
 
-    }
+  type Escalator implements Tile {
+    _id: ID!
+    coordinates: Coordinates
+    neighbours: [Tile!]
+  }
 
-    type Mutation {
-    }
+  type Vortex implements Tile {
+    _id: ID!
+    coordinates: Coordinates
+    neighbours: [Tile!]
+    colour: String!
+  }
 
-    type Character {
-      _id: ID!
-    }
+  type Connector implements Tile {
+    _id: ID!
+    coordinates: Coordinates
+    neighbours: [Tile!]
+    colour: String!
+  }
 
-    interface Tile {
-      _id: ID!,
-      walkable: Boolean!,
-      connector: Boolean!,
-    }
+  type Item implements Tile {
+    _id: ID!
+    coordinates: Coordinates
+    neighbours: [Tile!]
+    colour: String!
+  }
 
-    type Wall implements Tile {
-      _id: ID!,
-      walkable: Boolean!,
-      connector: Boolean!,
-    }
-    
-    type Floor implements Tile {
-      _id: ID!,
-      walkable: Boolean!,
-      connector: Boolean!,
-    }
-
-    type Escalator implements Tile {
-      _id: ID!,
-      walkable: Boolean!,
-      connector: Boolean!,
-    }
-
-    type Vortex implements Tile {
-      _id: ID!,
-      walkable: Boolean!,
-      connector: Boolean!,
-    }
-
-    type Searchable implements Tile {
-      _id: ID!,
-      walkable: Boolean!,
-      connector: Boolean!,
-    }
-
-    type Exit implements Tile {
-      _id: ID!,
-      walkable: Boolean!,
-      connector: Boolean!,
-    }
-    `,
-};
+  type Exit implements Tile {
+    _id: ID!
+    coordinates: Coordinates
+    neighbours: [Tile!]
+    colour: String!
+  }
+`;
