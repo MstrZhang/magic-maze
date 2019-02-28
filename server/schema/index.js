@@ -1,11 +1,12 @@
 const { makeExecutableSchema } = require('apollo-server-express');
+const logger = require('../utils/logger');
 const common = require('./common');
 const tiles = require('./tiles');
 const character = require('./character');
 const game = require('./game');
 const mazetile = require('./mazetile');
 
-const Query = `
+const query = `
   type Query {
     _empty: String
   }
@@ -13,13 +14,12 @@ const Query = `
 
 module.exports = makeExecutableSchema({
   typeDefs: [
-    Query,
+    query,
     common,
     tiles,
     character,
     game,
     mazetile,
   ],
-  inheritResolversFromInterfaces: true,
-  resolvers: {},
+  logger: { log: e => logger.debug(e) },
 });

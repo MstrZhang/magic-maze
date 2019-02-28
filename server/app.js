@@ -1,7 +1,8 @@
-const path = require('path');
 const express = require('express');
+const morgan = require('morgan');
 const { ApolloServer } = require('apollo-server-express');
 const { createServer } = require('http');
+const logger = require('./utils/logger');
 
 const schema = require('./schema');
 const resolvers = require('./resolvers');
@@ -10,6 +11,8 @@ const PORT = process.env.PORT || 8000;
 
 const app = express();
 const ws = createServer(app);
+
+app.use(morgan('combined', { stream: { write: (message) => { logger.info(message); } } }));
 
 const server = new ApolloServer({
   schema,
@@ -24,6 +27,6 @@ app.get('/', (req, res) => {
 });
 
 ws.listen(PORT, () => {
-  console.log(`🚀 Server ready at port ${PORT}`);
-  console.log(`🚀 Subscriptions ready at port ${PORT}`);
+  logger.info(`🚀 Server ready at port ${PORT}`);
+  logger.info(`🚀 Subscriptions ready at port ${PORT}`);
 });
