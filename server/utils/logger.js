@@ -1,8 +1,14 @@
-const winston = require('winston');
+const { createLogger, transports, format } = require('winston');
 
-module.exports = winston.createLogger({
+const { combine, timestamp, prettyPrint } = format;
+
+module.exports = createLogger({
+  format: combine(
+    timestamp(),
+    prettyPrint(),
+  ),
   transports: [
-    new winston.transports.Console({
+    new transports.Console({
       level: 'debug', // be more verbose for console statements
       handleExceptions: true,
       json: false,

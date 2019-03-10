@@ -3,30 +3,42 @@ const { gql } = require('apollo-server-express');
 module.exports = gql`
   interface Tile {
     _id: ID!
+    mazeTile: MazeTile!
+    coordinates: Coordinates
+    neighbours: [Tile]
+  }
+
+  type Normal implements Tile {
+    _id: ID!
+    mazeTile: MazeTile!
     coordinates: Coordinates
     neighbours: [Tile]
   }
 
   type Entry implements Tile {
     _id: ID!
+    mazeTile: MazeTile!
     coordinates: Coordinates
     neighbours: [Tile]
   }
 
   type Wall implements Tile {
     _id: ID!
+    mazeTile: MazeTile!
     coordinates: Coordinates
     neighbours: [Tile]
   }
 
   type Escalator implements Tile {
     _id: ID!
+    mazeTile: MazeTile!
     coordinates: Coordinates
     neighbours: [Tile]
   }
 
   type Vortex implements Tile {
     _id: ID!
+    mazeTile: MazeTile!
     coordinates: Coordinates
     neighbours: [Tile]
     colour: String!
@@ -34,14 +46,16 @@ module.exports = gql`
 
   type Search implements Tile {
     _id: ID!
+    mazeTile: MazeTile!
     coordinates: Coordinates
     neighbours: [Tile]
     colour: String!
-    used: Boolean!
+    searched: Boolean!
   }
 
   type Item implements Tile {
     _id: ID!
+    mazeTile: MazeTile!
     coordinates: Coordinates
     neighbours: [Tile]
     colour: String!
@@ -50,6 +64,7 @@ module.exports = gql`
 
   type Time implements Tile {
     _id: ID!
+    mazeTile: MazeTile!
     coordinates: Coordinates
     neighbours: [Tile]
     used: Boolean!
@@ -57,6 +72,7 @@ module.exports = gql`
 
   type Exit implements Tile {
     _id: ID!
+    mazeTile: MazeTile!
     coordinates: Coordinates
     neighbours: [Tile]
     colour: String!

@@ -1,5 +1,4 @@
-const { makeExecutableSchema } = require('apollo-server-express');
-const logger = require('../utils/logger');
+const { concatenateTypeDefs } = require('apollo-server-express');
 const common = require('./common');
 const tiles = require('./tiles');
 const character = require('./character');
@@ -12,14 +11,11 @@ const query = `
   }
 `;
 
-module.exports = makeExecutableSchema({
-  typeDefs: [
-    query,
-    common,
-    tiles,
-    character,
-    game,
-    mazetile,
-  ],
-  logger: { log: e => logger.debug(e) },
-});
+module.exports = concatenateTypeDefs([
+  query,
+  common,
+  tiles,
+  character,
+  game,
+  mazetile,
+]);

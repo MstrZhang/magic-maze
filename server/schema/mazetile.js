@@ -8,7 +8,8 @@ const { gql } = require('apollo-server-express');
 module.exports = gql`
   type MazeTile {
     _id: ID!
-    orientation: Int!   # o <- [0, 3], rotate graph CCW by o * 90 degrees
-    tiles: [Tile!]!
+    orientation: Orientation   # o <- [0, 3], rotate graph CCW by o * 90 degrees
+    adjacentMazeTiles: [MazeTile!]!
+    gameState: GameState!
   }
 `;

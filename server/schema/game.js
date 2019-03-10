@@ -2,6 +2,7 @@ const { gql } = require('apollo-server-express');
 
 module.exports = gql`
   type GameState {
+    _id: ID!
     vortex_enabled: Boolean!
     items_claimed: Boolean!         # all lads standing on Item tile
     characters_escaped: Boolean!    # all lads on Exit tile
