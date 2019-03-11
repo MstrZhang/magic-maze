@@ -1,0 +1,31 @@
+#board {
+  margin: 0;
+}
+
+.sidenav{
+  height: 100%;
+  width: 150px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #45B29D;
+  overflow-x:hidden;
+  box-shadow: 10px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  text-align: center;
+
+  /* flex properties */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.player {
+  height: 100px;
+  width: 100px;
+  border-radius: 5px;
+  background-color: #EFC94C;
+  margin: 2em 0 2em 0;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
