@@ -4,7 +4,7 @@ const express = require('express');
 const morgan = require('morgan');
 const { ApolloServer } = require('apollo-server-express');
 const { createServer } = require('http');
-const logger = require('./utils/logger');
+const logger = require('./common/logger');
 
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');

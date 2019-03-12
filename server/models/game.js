@@ -5,6 +5,7 @@ const { ObjectId } = mongoose.Schema.Types;
 
 // controls the state
 const gameState = new mongoose.Schema({
+  _id: { type: String, required: true },
   vortex_enabled: { type: Boolean, required: true },
   items_claimed: { type: Boolean, required: true },
   characters_escaped: { type: Boolean, required: true },

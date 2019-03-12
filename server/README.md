@@ -3,7 +3,7 @@
 This folder contains the server-side code for the Magic Maze board game.
 
 ## Requirements
-- Node dubnium (10.14.2) or carbon (8.14.0)
+- Node dubnium (10.15.3+) or carbon (8.15.1+)
 - npm 6.8.0+
 - A MongoDB instance to connect to
 
@@ -28,6 +28,5 @@ Perform the following steps if you want to work on this project locally
    npm start
    ```
 
-Which will start a local server on port `8000`. The graphql endpoints are at `/server/graphql`.
-
-
+Which will start a local server on port `8000` (or whatever port you set in `.env`). 
+The graphql endpoints are at `/server/graphql`.

@@ -5,6 +5,7 @@ const db = mongoose.createConnection(process.env.MONGODB_DEV, { useNewUrlParser:
 
 const mazetile = new mongoose.Schema();
 mazetile.add({
+  _id: { type: String, required: true },
   orientation: { type: Number, default: 0, required: true },
   gameState: { type: gameStateSchema, required: true },
   adjacentMazeTiles: [mazetile],

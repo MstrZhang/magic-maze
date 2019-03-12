@@ -1,3 +1,5 @@
+const { ObjectId } = require('mongoose').Types;
+
 module.exports = {
   Tile: {
     __resolveType(tile) {
@@ -13,5 +15,11 @@ module.exports = {
         default: return 'Normal';
       }
     },
+  },
+  Query: {
+    tile: async (_, { tileID }, { models }) => models.Tile.findOne({ _id: ObjectId(tileID) }),
+    tiles: async (_, { mazeTileID }, { models }) => models.Tile
+      .find({ mazeTile: mazeTileID })
+      .toArray(),
   },
 };

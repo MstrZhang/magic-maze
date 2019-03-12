@@ -12,4 +12,9 @@ module.exports = gql`
     x: Int!
     y: Int!
   }
+
+  input CoordinatesInput {
+    x: Int!
+    y: Int!
+  }
 `;

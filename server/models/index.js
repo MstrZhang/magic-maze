@@ -4,8 +4,8 @@ const { GameState } = require('./game');
 const { Character } = require('./character');
 
 module.exports = {
-  ...Tile,
-  ...MazeTile,
-  ...GameState,
-  ...Character,
+  Tile,
+  MazeTile,
+  GameState,
+  Character,
 };
