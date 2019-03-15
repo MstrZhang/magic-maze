@@ -9,7 +9,7 @@ module.exports = gql`
   type MazeTile {
     _id: ID!
     orientation: Orientation   # o <- [0, 3], rotate graph CCW by o * 90 degrees
-    cornerCoordinate: Coordinates
+    cornerCoordinates: Coordinates
     spriteID: Int!
   }
 `;

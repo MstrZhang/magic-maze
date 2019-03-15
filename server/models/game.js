@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
+const { mazeTileSchema } = require('./mazetile');
+const { characterSchema }  = require('./character');
 
 const db = mongoose.createConnection(process.env.MONGODB_DEV, { useNewUrlParser: true });
-const { ObjectId } = mongoose.Schema.Types;
 
 // controls the state
 const gameState = new mongoose.Schema({
@@ -9,8 +10,8 @@ const gameState = new mongoose.Schema({
   vortexEnabled: { type: Boolean, required: true },
   allItemsClaimed: { type: Boolean, required: true },
   allCharactersEscaped: { type: Boolean, required: true },
-  unusedSearches: [{ type: ObjectId, required: true }],
-  unusedMazeTiles: [{ type: ObjectId, required: true }],
+  mazeTiles: [{ type: mazeTileSchema, required: true }],
+  characters: [{ type: characterSchema, required: true }],
 });
 
 module.exports = {
