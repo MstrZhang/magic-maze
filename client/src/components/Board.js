@@ -4,15 +4,16 @@ import * as PIXI from 'pixi.js';
 import spritesheet from '../assets/spritesheet.png';
 import './Board.css';
 
-const X_OFFSET = 150;
-const Y_OFFSET = 100;
+const SCALE = 4;
 const TILE_SIZE = 16;
+const X_OFFSET = 140;
+const Y_OFFSET = 80;
 
 // create board
 const app = new PIXI.Application({
   width: window.innerWidth,
   height: window.innerHeight,
-  resolution: 4,
+  resolution: SCALE,
 });
 app.renderer.backgroundColor = 0x334D5C;
 // set the scale mode (makes it so the pixels aren't blurry when scaling)
@@ -173,12 +174,13 @@ class Board extends Component {
   render() {
     return (
       <div>
-        <div className="sidenav">
+        {/* temporarily remove sidenav (not required for singleplayer) */}
+        {/* <div className="sidenav">
           <div className="player">kev</div>
           <div className="player">rakin</div>
           <div className="player">luc</div>
           <div className="player">not-luc</div>
-        </div>
+        </div> */}
         <div id="board" />
       </div>
     );
