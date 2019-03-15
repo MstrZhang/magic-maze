@@ -1,4 +1,3 @@
-const { ObjectId } = require('mongoose').Types;
 const {
   ENTRY_TYPE, WALL_TYPE, ESCALATOR_TYPE, VORTEX_TYPE, SEARCH_TYPE, ITEM_TYPE, TIME_TYPE, EXIT_TYPE,
 } = require('../common/consts');
@@ -18,11 +17,5 @@ module.exports = {
         default: return 'Normal';
       }
     },
-  },
-  Query: {
-    tile: async (_parent, { tileID }, { models }) => models.Tile.findOne({ _id: ObjectId(tileID) }),
-    tiles: async (_parent, { mazeTileID }, { models }) => models.Tile
-      .find({ mazeTileID: ObjectId(mazeTileID) })
-      .toArray(),
   },
 };

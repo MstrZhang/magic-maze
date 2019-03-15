@@ -25,11 +25,11 @@ const mutations = gql`
     # Character
     moveCharacter(
       gameStateID: ID!,
-      characterID: Coordinates!,
-      startTileID: Coordinates!,
-      endTileID: Coordinates!,
+      characterID: CoordinatesInput!,
+      startTileID: CoordinatesInput!,
+      endTileID: CoordinatesInput!,
     ): GameState!
-    searchAction(gameStateID: ID!, characterID: Coordinates!, searchTileID: Coordinates!): GameState!
+    searchAction(gameStateID: ID!, characterID: CoordinatesInput!, searchTileID: CoordinatesInput!): GameState!
   }
 `;
 
