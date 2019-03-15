@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const tiles = require('./tiles');
+const mazetile = require('./mazetile');
 const game = require('./game');
 
 module.exports = _.merge({},
@@ -12,4 +13,5 @@ module.exports = _.merge({},
     },
   },
   tiles,
+  mazetile,
   game);
