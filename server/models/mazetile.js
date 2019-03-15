@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 const { ObjectId } = mongoose.Schema.Types;
 
 const db = mongoose.createConnection(process.env.MONGODB_DEV, { useNewUrlParser: true });

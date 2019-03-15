@@ -7,9 +7,7 @@ module.exports = gql`
     neighbours: [ID]
     type: String!
     colour: String
-    claimed: Boolean
     used: Boolean
-    escaped: Boolean
     searched: Boolean
   }
 
@@ -71,7 +69,6 @@ module.exports = gql`
     coordinates: Coordinates
     neighbours: [ID]
     colour: String!
-    claimed: Boolean!
   }
 
   type Time implements Tile {
@@ -88,6 +85,5 @@ module.exports = gql`
     coordinates: Coordinates
     neighbours: [ID]
     colour: String!
-    escaped: Boolean!
   }
 `;

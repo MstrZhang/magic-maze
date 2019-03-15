@@ -6,5 +6,7 @@ module.exports = gql`
     colour: String!
     gameState: GameState!
     coordinates: Coordinates!
+    itemClaimed: Boolean!         # lad standing on Item tile
+    characterEscaped: Boolean!    # lad on Exit tile
   }
 `;

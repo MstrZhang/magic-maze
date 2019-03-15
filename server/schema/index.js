@@ -32,14 +32,12 @@ const mutations = gql`
     updateGameStateItems(gameStateID: ID!, vortexEnabled: Boolean, itemsClaimed: Boolean, charactersEscaped: Boolean): GameState!
 
     # MazeTile
-    rotateMazeTile(mazeTileID: ID!, orientation: Orientation!): MazeTile!
-    popUnusedMazeTile(gameStateID: ID!): MazeTile
 
     # Tile
-    updateTileCoordinates(tileID: ID!, coordinates: CoordinatesInput!): Tile!
   
     # Character
-    moveCharacter(startCoordinates: CoordinatesInput!, endCoordinates: CoordinatesInput!, characterID: ID!): Character!
+    moveCharacter(gameStateID: ID!, characterID: ID!, startTileID: ID!, endTileID: ID!): Character!
+    searchAction(gameStateID: ID!, characterID: ID!, searchTileID: ID!): GameState!
   }
 `;
 

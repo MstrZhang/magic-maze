@@ -16,6 +16,6 @@ module.exports = gql`
     _id: ID!
     orientation: Orientation   # o <- [0, 3], rotate graph CCW by o * 90 degrees
     adjacentMazeTiles: [MazeTile!]!
-    gameStateID: ID!
+    gameState: ID!
   }
 `;

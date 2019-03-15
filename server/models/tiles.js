@@ -3,6 +3,9 @@ const { coordinatesSchema } = require('./common');
 const { ObjectId } = mongoose.Schema.Types;
 
 
+const { ObjectId } = mongoose.Schema.Types;
+
+
 const db = mongoose.createConnection(process.env.MONGODB_DEV, { useNewUrlParser: true });
 
 const tile = new mongoose.Schema();
@@ -15,9 +18,7 @@ tile.add({
 
   // special tile attributes
   colour: { type: String },
-  claimed: { type: Boolean }, // Item tiles
   used: { type: Boolean }, // Time tiles
-  escaped: { type: Boolean }, // Exit tiles
   searched: { type: Boolean }, // Search tiles
 });
 

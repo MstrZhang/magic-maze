@@ -19,7 +19,7 @@ const mazeTileCreation = async (gameStateID, models) => {
     const initialMazeTile = {
       orientation: 0,
       adjacentMazeTiles: [],
-      gameStateID,
+      gameState: gameStateID,
       spriteID: i,
     };
     mazeTileResult.push(models.MazeTile.insertOne({ ...initialMazeTile }));
@@ -31,7 +31,7 @@ const mazeTileCreation = async (gameStateID, models) => {
       // constant used for all wall edges between different tiles
       const wallConst = {
         _id: ObjectId(),
-        mazeTileID: mazeTile.insertedId,
+        mazeTile: mazeTile.insertedId,
         coordinates: null,
         neighbours: [],
         type: WALL_TYPE,
@@ -41,7 +41,7 @@ const mazeTileCreation = async (gameStateID, models) => {
       for (let j = 0; j < 16; j += 1) {
         const initialTile = {
           _id: ObjectId(),
-          mazeTileID: mazeTile.insertedId,
+          mazeTile: mazeTile.insertedId,
           coordinates: null,
         };
         tileResults.push(initialTile);
@@ -69,6 +69,8 @@ const characterCreation = async (gameStateID, models) => {
     const initalCharacter = {
       colour,
       gameState: gameStateID,
+      itemClaimed: false,
+      characterEscaped: false,
       coordinates: shuffledCoordinates[index],
     };
     models.Character.insertOne({ ...initalCharacter });
@@ -76,10 +78,10 @@ const characterCreation = async (gameStateID, models) => {
 };
 
 const updateUnusedSearches = async (gameStateID, models) => {
-  const firstMazeTile = await models.MazeTile.findOne({ gameStateID });
+  const firstMazeTile = await models.MazeTile.findOne({ gameState: gameStateID });
   const unusedSearches = await models.Tile.find({
-    mazeTileID: firstMazeTile._id, type: SEARCH_TYPE,
-  }).project({ coordinates: 1 }).toArray();
+    mazeTile: firstMazeTile._id, type: SEARCH_TYPE,
+  }).project({ coordinates: true }).toArray();
 
   await models.GameState
     .updateOne({ _id: gameStateID }, { $set: { unusedSearches } });
@@ -87,7 +89,7 @@ const updateUnusedSearches = async (gameStateID, models) => {
 
 const updateUnusedMazeTiles = async (gameStateID, models) => {
   const allMazeTiles = await models.MazeTile.find({ gameStateID })
-    .sort({ spriteID: 1 }).toArray();
+    .sort({ spriteID: true }).toArray();
   const reorderedMazeTiles = _.concat([allMazeTiles[0]], shuffle(allMazeTiles.splice(1)))
     .map(mazeTile => mazeTile._id);
   await models.GameState
@@ -106,8 +108,8 @@ module.exports = {
       // create gameState object and get ID
       const initialGameState = {
         vortexEnabled: true,
-        itemsClaimed: false,
-        charactersEscaped: false,
+        allItemsClaimed: false,
+        allCharactersEscaped: false,
         unusedSearches: [],
         unusedMazeTiles: [],
       };

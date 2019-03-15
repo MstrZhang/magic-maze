@@ -7,8 +7,8 @@ const { ObjectId } = mongoose.Schema.Types;
 const gameState = new mongoose.Schema({
   _id: { type: String, required: true },
   vortexEnabled: { type: Boolean, required: true },
-  itemsClaimed: { type: Boolean, required: true },
-  charactersEscaped: { type: Boolean, required: true },
+  allItemsClaimed: { type: Boolean, required: true },
+  allCharactersEscaped: { type: Boolean, required: true },
   unusedSearches: [{ type: ObjectId, required: true }],
   unusedMazeTiles: [{ type: ObjectId, required: true }],
 });
