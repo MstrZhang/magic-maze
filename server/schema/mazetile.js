@@ -9,13 +9,13 @@ module.exports = gql`
   input MazeTileInput {
     orientation: Orientation!
     adjacentMazeTiles: [MazeTileInput!]!
-    gameState: ID!  # from the GameState model
+    gameStateID: ID!  # from the GameState model
   }
 
   type MazeTile {
     _id: ID!
     orientation: Orientation   # o <- [0, 3], rotate graph CCW by o * 90 degrees
     adjacentMazeTiles: [MazeTile!]!
-    gameState: GameState!
+    gameStateID: ID!
   }
 `;

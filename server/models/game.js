@@ -6,10 +6,11 @@ const { ObjectId } = mongoose.Schema.Types;
 // controls the state
 const gameState = new mongoose.Schema({
   _id: { type: String, required: true },
-  vortex_enabled: { type: Boolean, required: true },
-  items_claimed: { type: Boolean, required: true },
-  characters_escaped: { type: Boolean, required: true },
-  unused_searches: [{ type: ObjectId, required: true }],
+  vortexEnabled: { type: Boolean, required: true },
+  itemsClaimed: { type: Boolean, required: true },
+  charactersEscaped: { type: Boolean, required: true },
+  unusedSearches: [{ type: ObjectId, required: true }],
+  unusedMazeTiles: [{ type: ObjectId, required: true }],
 });
 
 module.exports = {
