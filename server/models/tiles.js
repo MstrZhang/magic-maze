@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const { coordinatesSchema } = require('./common');
 const { ObjectId } = mongoose.Schema.Types;
 
-
-const { ObjectId } = mongoose.Schema.Types;
-
-
 const db = mongoose.createConnection(process.env.MONGODB_DEV, { useNewUrlParser: true });
 
 const tile = new mongoose.Schema();

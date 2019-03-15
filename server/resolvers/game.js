@@ -77,19 +77,9 @@ const characterCreation = async (gameStateID, models) => {
   });
 };
 
-const updateUnusedSearches = async (gameStateID, models) => {
-  const firstMazeTile = await models.MazeTile.findOne({ gameState: gameStateID });
-  const unusedSearches = await models.Tile.find({
-    mazeTile: firstMazeTile._id, type: SEARCH_TYPE,
-  }).project({ coordinates: true }).toArray();
-
-  await models.GameState
-    .updateOne({ _id: gameStateID }, { $set: { unusedSearches } });
-};
-
 const updateUnusedMazeTiles = async (gameStateID, models) => {
-  const allMazeTiles = await models.MazeTile.find({ gameStateID })
-    .sort({ spriteID: true }).toArray();
+  const allMazeTiles = await models.MazeTile.find({ gameState: ObjectId(gameStateID) })
+    .sort({ spriteID: 1 }).toArray();
   const reorderedMazeTiles = _.concat([allMazeTiles[0]], shuffle(allMazeTiles.splice(1)))
     .map(mazeTile => mazeTile._id);
   await models.GameState
@@ -123,10 +113,9 @@ module.exports = {
 
         await mazeTileCreation(gameState.insertedId, models);
 
-        const updateSearch = updateUnusedSearches(gameState.insertedId, models);
         const updateMazeTile = updateUnusedMazeTiles(gameState.insertedId, models);
 
-        await Promise.all([characters, updateSearch, updateMazeTile]);
+        await Promise.all([characters, updateMazeTile]);
         await session.commitTransaction();
         session.endSession();
         return gameState.insertedId;
