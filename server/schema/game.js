@@ -6,6 +6,7 @@ module.exports = gql`
     vortexEnabled: Boolean!
     allItemsClaimed: Boolean!      # all lads standing on Item tile
     allCharactersEscaped: Boolean! # all lads on Exit tile 
-    unusedMazeTiles: [ID!]         # list of IDs of unused mazeTiles
+    mazeTiles: [MazeTile!]         # list of of used and unused mazeTiles
+    characters: [Character!]
   }
 `;

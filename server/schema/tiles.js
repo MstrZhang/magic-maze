@@ -1,16 +1,6 @@
 const { gql } = require('apollo-server-express');
 
 module.exports = gql`
-  input TileInput {
-    mazeTileID: ID!
-    coordinates: CoordinatesInput
-    neighbours: [ID]
-    type: String!
-    colour: String
-    used: Boolean
-    searched: Boolean
-  }
-
   interface Tile {
     _id: ID!
     mazeTileID: ID!
