@@ -25,33 +25,46 @@ const vortexMovement = (gameState, startTile, endTile, character) => (
 const escalatorMovement = (startTile, endTile) => (
   startTile.type === ESCALATOR_TYPE
   && endTile.type === ESCALATOR_TYPE
-  && startTile.mazeTile === endTile.mazeTile
+  && startTile.mazeTileID === endTile.mazeTileID
 );
 
-const moveDirection = (startTile, endTile, direction) => {
-  let currTile = startTile;
-
-  while (currTile.type !== WALL_TYPE) {
-    if (currTile.coordinates.x === endTile.coordinates.x
-        && currTile.coordinates.y === endTile.coordinates.y) {
-      return true;
-    }
-    currTile = currTile.neighbours[direction];
+const moveDirection = async (gameState, characterColour, currTile, endTile, direction, models) => {
+  if (currTile === null || currTile.type === WALL_TYPE) {
+    return false;
   }
+  const characterCollision = _.filter(
+    gameState.characters,
+    char => (char.colour !== characterColour
+        && char.coordinates.x === currTile.coordinates.x
+        && char.coordinates.y === currTile.coordinates.y),
+  );
 
-  return false;
+  if (characterCollision.length > 0) return false;
+  if (currTile.coordinates.x === endTile.coordinates.x
+      && currTile.coordinates.y === endTile.coordinates.y) {
+    return true;
+  }
+  return moveDirection(
+    gameState,
+    characterColour,
+    await models.Tile.findOne({
+      gameStateID: ObjectId(gameState._id),
+      _id: currTile.neighbours[direction],
+    }),
+    endTile,
+    direction,
+    models,
+  );
 };
 
 const checkCharactersOnTile = async (gameStateID, tileType, models) => {
   let counts;
   if (tileType === EXIT_TYPE) {
-    counts = await models.Character
-      .count({ gameState: gameStateID, characterEscaped: true })
-      .toArray();
+    counts = await models.GameState
+      .countDocuments({ _id: gameStateID, 'characters.characterEscaped': true });
   } else if (tileType === ITEM_TYPE) {
-    counts = await models.Character
-      .count({ gameState: gameStateID, itemClaimed: true })
-      .toArray();
+    counts = await models.GameState
+      .countDocuments({ _id: gameStateID, 'characters.itemClaimed': true });
   }
 
   if (counts === 4) {
@@ -66,16 +79,28 @@ const checkCharactersOnTile = async (gameStateID, tileType, models) => {
   }
 };
 
-const updateItemClaimed = async (endTile, character, models) => {
-  await models.Character.updateOne(
-    { _id: ObjectId(character._id) }, { $set: { itemClaimed: endTile.type === ITEM_TYPE } },
-  );
+const updateItemClaimed = async (gameStateID, endTile, characterColour, models) => {
+  await models.GameState.updateOne({
+    _id: gameStateID,
+    'character.colour': characterColour,
+  },
+  {
+    $set: {
+      'character.$.itemClaimed': endTile.type === ITEM_TYPE,
+    },
+  });
 };
 
-const updateCharacterEscaped = async (endTile, character, models) => {
-  await models.Character.updateOne(
-    { _id: ObjectId(character._id) }, { $set: { characterEscaped: endTile.type === EXIT_TYPE } },
-  );
+const updateCharacterEscaped = async (gameStateID, endTile, characterColour, models) => {
+  await models.GameState.updateOne({
+    _id: gameStateID,
+    'character.colour': characterColour,
+  },
+  {
+    $set: {
+      'character.$.itemClaimed': endTile.type === EXIT_TYPE,
+    },
+  });
 };
 
 const rotateList = (array, steps) => (
@@ -124,8 +149,9 @@ const manhattanDistance = (coord1, coord2) => (
 const updateAdjacentMazeTiles = async (nextMazeTile, models) => {
   // given new MazeTile to add do the following
   // for each search in newMazeTile, check if there is an adjacent MazeTile using unusedSearches
-  // if there is, update that mazetile's null to newmazeTile's search tile and vice versa. remove that tile from unusedSearches
-  // if not, add this newMazeTile's seaerch tile to the list of new searchTiles
+  // if there is, update that mazetile's null to newmazeTile's search tile and vice versa. remove
+  // that tile from unusedSearches if not, add this newMazeTile's seaerch tile to the list of new
+  // searchTiles
 
   let found = false;
   // assuming coordinates are set for nextMazeTile
@@ -187,18 +213,13 @@ const updateAdjacentMazeTiles = async (nextMazeTile, models) => {
 
 module.exports = {
   Query: {
-    character: async (_parent, { characterID }, { models }) => models.Character
-      .findOne({ _id: ObjectId(characterID) }),
-    characters: async (_parent, { gameStateID }, { models }) => models.Character
-      .find({ gameState: ObjectId(gameStateID) })
-      .toArray(),
   },
   Mutation: {
     moveCharacter: async (_parent, {
       gameStateID,
-      characterID,
-      startTileID,
-      endTileID,
+      userID,
+      characterColour,
+      endTileCoords,
     }, { models }) => {
       /**
        * Thinking about having a switch case here or something to
@@ -219,22 +240,26 @@ module.exports = {
 
       let direction;
 
-      const startTile = await models.Tile
-        .findOne({ _id: startTileID, gameState: ObjectId(gameStateID) });
-      const endTile = await models.Tile
-        .findOne({ _id: endTileID, gameState: ObjectId(gameStateID) });
-      const character = await models.Character
-        .findOne({ _id: characterID, gameState: ObjectId(gameStateID) });
-      const gameState = await models.GameState
-        .findOne({ gameState: ObjectId(gameStateID) });
+      const gameState = await models.GameState.findOne({ _id: ObjectId(gameStateID) });
+      const character = _.find(gameState.characters, char => char.colour === characterColour);
 
-      if (!(startTile && endTile && character && gameState)) {
+      const startTile = await models.Tile.findOne({
+        gameStateID: ObjectId(gameStateID),
+        coordinates: character.coordinates,
+      });
+      const endTile = await models.Tile.findOne({
+        gameStateID: ObjectId(gameStateID),
+        coordinates: endTileCoords,
+      });
+
+      if (!(startTile && endTile && gameState)) {
         logger.error('Start and/or End Tiles, Character or Game State does not exist');
         throw Error('Start and/or End Tiles, Character or Game State does not exist');
       }
 
       let shouldMove = false;
       let movedStraightLine = false;
+
       if (startTile.coordinates.x !== endTile.coordinates.x
         && startTile.coordinates.y !== endTile.coordinates.y) {
         // Potentially vortex or escalator
@@ -243,38 +268,49 @@ module.exports = {
       } else if (startTile.coordinates.y !== endTile.coordinates.y) {
         // Potentially up or down
         direction = startTile.coordinates.y > endTile.coordinates.y
-          ? DIRECTIONS.DOWN
-          : DIRECTIONS.UP;
-        shouldMove = moveDirection(startTile, endTile, direction);
+          ? DIRECTIONS.UP
+          : DIRECTIONS.DOWN;
+        shouldMove = await moveDirection(
+          gameState, character.colour, startTile, endTile, direction, models,
+        );
         movedStraightLine = shouldMove;
       } else if (startTile.coordinates.x !== endTile.coordinates.x) {
         // Potentially left or right
         direction = startTile.coordinates.x > endTile.coordinates.x
           ? DIRECTIONS.LEFT
           : DIRECTIONS.RIGHT;
-        shouldMove = moveDirection(startTile, endTile, direction);
+        shouldMove = await moveDirection(
+          gameState, character.colour, startTile, endTile, direction, models,
+        );
         movedStraightLine = shouldMove;
       }
 
       if (movedStraightLine) {
         if (!gameState.allItemsClaimed) {
-          await updateItemClaimed(character, endTile, models);
+          await updateItemClaimed(ObjectId(gameStateID), endTile, character.colour, models);
           await checkCharactersOnTile(ObjectId(gameStateID), ITEM_TYPE, models);
         }
         if (gameState.allItemsClaimed && !gameState.allCharactersEscaped) {
-          await updateCharacterEscaped(character, endTile, models);
+          await updateCharacterEscaped(ObjectId(gameStateID), character, endTile, models);
           await checkCharactersOnTile(ObjectId(gameStateID), EXIT_TYPE, models);
         }
       }
+
       if (shouldMove) {
         // update character
-        character.coordinates = endTile.coordinates;
+        const { coordinates } = endTile;
         // update to db
-        await models.Character.updateOne(
-          { _id: ObjectId(character._id) }, { $set: { coordinates: character.coordinates } },
-        );
+        await models.GameState.updateOne({
+          _id: ObjectId(gameStateID),
+          'characters.colour': characterColour,
+        },
+        {
+          $set: {
+            'characters.$.coordinates': coordinates,
+          },
+        });
       }
-      return character;
+      return models.GameState.findOne({ _id: ObjectId(gameStateID) });
     },
     searchAction: async (_parent, { gameStateID, characterID, searchTileID }, { models }) => {
       /**

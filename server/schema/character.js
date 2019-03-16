@@ -5,6 +5,7 @@ module.exports = gql`
     _id: ID!
     colour: String!
     coordinates: Coordinates!
+    locked: ID
     itemClaimed: Boolean!         # lad standing on Item tile
     characterEscaped: Boolean!    # lad on Exit tile
   }

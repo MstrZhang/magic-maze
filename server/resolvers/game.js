@@ -6,7 +6,6 @@ const logger = require('../common/logger');
 const { shuffle } = require('../common/utils');
 const {
   WALL_TYPE,
-  SEARCH_TYPE,
   MAZETILE_TILE_CONFIGS,
   CHARACTER_COLOR_CONFIG,
   CHARACTER_COORDINATES_CONFIG,
@@ -31,6 +30,7 @@ const mazeTileCreation = async (gameStateID, models) => {
     const wallConst = {
       _id: ObjectId(),
       mazeTile: mazeTile._id,
+      gameStateID,
       coordinates: null,
       neighbours: [],
       type: WALL_TYPE,
@@ -40,7 +40,8 @@ const mazeTileCreation = async (gameStateID, models) => {
     for (let j = 0; j < 16; j += 1) {
       const initialTile = {
         _id: ObjectId(),
-        mazeTile: mazeTile._id,
+        mazeTileID: mazeTile._id,
+        gameStateID,
         coordinates: null,
       };
       tileResults.push(initialTile);
@@ -71,6 +72,7 @@ const characterCreation = async (gameStateID, models) => {
       itemClaimed: false,
       characterEscaped: false,
       coordinates: shuffledCoordinates[index],
+      locked: null,
     }
   ));
   await models.GameState.updateOne({ _id: gameStateID }, { $set: { characters } });

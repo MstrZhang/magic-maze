@@ -7,7 +7,8 @@ const db = mongoose.createConnection(process.env.MONGODB_DEV, { useNewUrlParser:
 
 const tile = new mongoose.Schema({
   _id: { type: String, required: true },
-  mazeTile: { type: ObjectId, required: true },
+  mazeTileID: { type: ObjectId, required: true },
+  gameStateID: { type: ObjectId, required: true },
   coordinates: { type: coordinatesSchema },
   type: { type: String, required: true },
   neighbours: [{ type: ObjectId, required: true }],

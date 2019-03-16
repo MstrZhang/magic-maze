@@ -4,6 +4,7 @@ module.exports = gql`
   interface Tile {
     _id: ID!
     mazeTileID: ID!
+    gameStateID: ID!
     coordinates: Coordinates
     neighbours: [ID]
   }
@@ -11,6 +12,7 @@ module.exports = gql`
   type Normal implements Tile {
     _id: ID!
     mazeTileID: ID!
+    gameStateID: ID!
     coordinates: Coordinates
     neighbours: [ID]
   }
@@ -18,6 +20,7 @@ module.exports = gql`
   type Entry implements Tile {
     _id: ID!
     mazeTileID: ID!
+    gameStateID: ID!
     coordinates: Coordinates
     neighbours: [ID]
   }
@@ -25,6 +28,7 @@ module.exports = gql`
   type Wall implements Tile {
     _id: ID!
     mazeTileID: ID!
+    gameStateID: ID!
     coordinates: Coordinates
     neighbours: [ID]
   }
@@ -32,6 +36,7 @@ module.exports = gql`
   type Escalator implements Tile {
     _id: ID!
     mazeTileID: ID!
+    gameStateID: ID!
     coordinates: Coordinates
     neighbours: [ID]
   }
@@ -39,6 +44,7 @@ module.exports = gql`
   type Vortex implements Tile {
     _id: ID!
     mazeTileID: ID!
+    gameStateID: ID!
     coordinates: Coordinates
     neighbours: [ID]
     colour: String!
@@ -47,6 +53,7 @@ module.exports = gql`
   type Search implements Tile {
     _id: ID!
     mazeTileID: ID!
+    gameStateID: ID!
     coordinates: Coordinates
     neighbours: [ID]
     colour: String!
@@ -56,6 +63,7 @@ module.exports = gql`
   type Item implements Tile {
     _id: ID!
     mazeTileID: ID!
+    gameStateID: ID!
     coordinates: Coordinates
     neighbours: [ID]
     colour: String!
@@ -64,6 +72,7 @@ module.exports = gql`
   type Time implements Tile {
     _id: ID!
     mazeTileID: ID!
+    gameStateID: ID!
     coordinates: Coordinates
     neighbours: [ID]
     used: Boolean!
@@ -72,6 +81,7 @@ module.exports = gql`
   type Exit implements Tile {
     _id: ID!
     mazeTileID: ID!
+    gameStateID: ID!
     coordinates: Coordinates
     neighbours: [ID]
     colour: String!

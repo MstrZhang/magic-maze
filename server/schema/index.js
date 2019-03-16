@@ -23,11 +23,12 @@ const mutations = gql`
     # Tile
   
     # Character
+    lockCharacter(gameStateID: ID!, colour: String!, userID: ID!): GameState!
     moveCharacter(
       gameStateID: ID!,
-      characterID: CoordinatesInput!,
-      startTileID: CoordinatesInput!,
-      endTileID: CoordinatesInput!,
+      userID: ID,
+      characterColour: String!,
+      endTileCoords: CoordinatesInput!,
     ): GameState!
     searchAction(gameStateID: ID!, characterID: CoordinatesInput!, searchTileID: CoordinatesInput!): GameState!
   }
