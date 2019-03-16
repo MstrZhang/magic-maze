@@ -11,6 +11,10 @@ const resolvers = require('./resolvers');
 const models = require('./models');
 
 const PORT = process.env.PORT || 8000;
+const CORS_OPTIONS = {
+  origin: process.env.CLIENT,
+  credentials: false,
+};
 
 const app = express();
 const ws = createServer(app);
@@ -28,7 +32,7 @@ const server = new ApolloServer({
   },
 });
 
-server.applyMiddleware({ app, path: '/server/graphql' });
+server.applyMiddleware({ app, path: '/server/graphql', cors: CORS_OPTIONS });
 server.installSubscriptionHandlers(ws);
 
 ws.listen(PORT, () => {
