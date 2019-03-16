@@ -17,7 +17,10 @@ const app = express();
 const ws = createServer(app);
 
 app.use(morgan('combined', { stream: { write: (message) => { logger.info(message); } } }));
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  optionsSuccessStatus: 200,
+}));
 
 const server = new ApolloServer({
   typeDefs,
