@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express');
 const { createServer } = require('http');
 const logger = require('./common/logger');
@@ -11,15 +12,12 @@ const resolvers = require('./resolvers');
 const models = require('./models');
 
 const PORT = process.env.PORT || 8000;
-const CORS_OPTIONS = {
-  origin: process.env.CLIENT,
-  credentials: false,
-};
 
 const app = express();
 const ws = createServer(app);
 
 app.use(morgan('combined', { stream: { write: (message) => { logger.info(message); } } }));
+app.use(cors());
 
 const server = new ApolloServer({
   typeDefs,
@@ -32,7 +30,7 @@ const server = new ApolloServer({
   },
 });
 
-server.applyMiddleware({ app, path: '/server/graphql', cors: CORS_OPTIONS });
+server.applyMiddleware({ app, path: '/server/graphql' });
 server.installSubscriptionHandlers(ws);
 
 ws.listen(PORT, () => {
