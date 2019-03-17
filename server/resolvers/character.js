@@ -472,14 +472,9 @@ module.exports = {
         ObjectId(nextMazeTile._id),
         models,
       );
-      console.log(nextMazeTile);
+
       const gs = await models.GameState.findOne({ _id: ObjectId(gameStateID) });
-      console.log(gs);
-      return _.find(gs.mazeTiles, (mt) => {
-        console.log(`current mt: ${mt._id}`);
-        console.log(`nextMazeTile: ${ObjectId(nextMazeTile._id)}`);
-        return (ObjectId(mt._id) === ObjectId(nextMazeTile._id));
-      });
+      return _.find(gs.mazeTiles, mt => mt.spriteID === nextMazeTile.spriteID);
     },
   },
 };
