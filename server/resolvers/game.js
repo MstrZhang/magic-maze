@@ -9,6 +9,7 @@ const {
   MAZETILE_TILE_CONFIGS,
   CHARACTER_COLOR_CONFIG,
   CHARACTER_COORDINATES_CONFIG,
+  TIME,
 } = require('../common/consts');
 
 const mazeTileCreation = async (gameStateID, models) => {
@@ -97,6 +98,7 @@ module.exports = {
         vortexEnabled: true,
         allItemsClaimed: false,
         allCharactersEscaped: false,
+        endTime: new Date(new Date().getTime() + TIME),
         mazeTiles: [],
         characters: [],
       };
