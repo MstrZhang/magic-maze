@@ -313,6 +313,8 @@ const CHARACTER_COORDINATES_CONFIG = [
   { x: 2, y: 2 },
 ];
 
+const TIME = (60000 * 3);
+
 module.exports = {
   DIRECTIONS,
   WALL_TYPE,
@@ -326,4 +328,5 @@ module.exports = {
   CHARACTER_COLOR_CONFIG,
   CHARACTER_COORDINATES_CONFIG,
   MAZETILE_TILE_CONFIGS,
+  TIME,
 };
