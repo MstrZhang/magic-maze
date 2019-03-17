@@ -58,21 +58,24 @@ const moveDirection = async (gameState, characterColour, currTile, endTile, dire
   );
 };
 
-const checkCharactersOnTile = async (gameStateID, tileType, models) => {
+const checkCharactersOnTile = async (gameState, tileType, models) => {
   let counts;
-  if (tileType === EXIT_TYPE) {
+  if (tileType === EXIT_TYPE && gameState.allItemsClaimed) {
     counts = await models.GameState
-      .countDocuments({ _id: gameStateID, 'characters.characterEscaped': true });
+      .countDocuments({ _id: ObjectId(gameState._id), 'characters.characterEscaped': true });
   } else if (tileType === ITEM_TYPE) {
     counts = await models.GameState
-      .countDocuments({ _id: gameStateID, 'characters.itemClaimed': true });
+      .countDocuments({ _id: ObjectId(gameState._id), 'characters.itemClaimed': true });
   }
 
   if (counts === 4) {
     if (tileType === EXIT_TYPE) {
-      await models.GameState.updateOne({ _id: gameStateID }, { allCharactersEscaped: true });
+      await models.GameState.updateOne(
+        { _id: ObjectId(gameState._id) },
+        { allCharactersEscaped: true },
+      );
     } else if (tileType === ITEM_TYPE) {
-      await models.GameState.updateOne({ _id: gameStateID }, {
+      await models.GameState.updateOne({ _id: ObjectId(gameState._id) }, {
         allItemsClaimed: true,
         vortexEnabled: false,
       });
@@ -341,11 +344,11 @@ module.exports = {
       if (movedStraightLine) {
         if (!gameState.allItemsClaimed) {
           await updateItemClaimed(ObjectId(gameStateID), endTile, character.colour, models);
-          await checkCharactersOnTile(ObjectId(gameStateID), ITEM_TYPE, models);
+          await checkCharactersOnTile(gameState, ITEM_TYPE, models);
         }
         if (gameState.allItemsClaimed && !gameState.allCharactersEscaped) {
           await updateCharacterEscaped(ObjectId(gameStateID), character, endTile, models);
-          await checkCharactersOnTile(ObjectId(gameStateID), EXIT_TYPE, models);
+          await checkCharactersOnTile(gameState, EXIT_TYPE, models);
         }
       }
 
