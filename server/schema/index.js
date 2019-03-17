@@ -30,7 +30,7 @@ const mutations = gql`
       characterColour: String!,
       endTileCoords: CoordinatesInput!,
     ): Character!
-    searchAction(gameStateID: ID!, characterCoords: CoordinatesInput!, searchTileCoords: CoordinatesInput!): GameState!
+    searchAction(gameStateID: ID!, characterCoords: CoordinatesInput!, searchTileCoords: CoordinatesInput!): MazeTile!
   }
 `;
 

@@ -96,9 +96,9 @@ const MAZETILE_3_TILE_NEIGHBOUR_CONFIG = [
   { type: WALL_TYPE, neighbours: [4, -1, 12, 9] },
   { type: WALL_TYPE, neighbours: [5, 8, 13, 10] },
   { type: WALL_TYPE, neighbours: [6, 9, 14, 11] },
-  { type: SEARCH_TYPE, neighbours: [7, 10, 15, null], colour: RED },
+  { type: SEARCH_TYPE, neighbours: [7, 10, 15, null], colour: RED, searched: false },
 
-  { type: EXIT_TYPE, neighbours: [8, -1, -1, 13], coluor: PURPLE },
+  { type: EXIT_TYPE, neighbours: [8, -1, -1, 13], colour: PURPLE },
   { type: ESCALATOR_TYPE, neighbours: [9, 12, null, 14], escalatorID: 0 },
   { type: WALL_TYPE, neighbours: [10, 13, -1, 15] },
   { type: WALL_TYPE, neighbours: [11, 14, -1, -1] },

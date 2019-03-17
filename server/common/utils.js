@@ -19,8 +19,15 @@ const shuffle = (array) => {
   return array;
 };
 
-const rotateList = (array, steps) => (
-  _.concat(_.drop(array, steps), _.take(array, array.length - steps))
+const rotateList = (array, shift) => (
+  // arr[-shift:] + arr[:-shift]
+  [
+    _.nth(array, ((0 - shift) % 4)),
+    _.nth(array, ((1 - shift) % 4)),
+    _.nth(array, ((2 - shift) % 4)),
+    _.nth(array, ((3 - shift) % 4)),
+  ]
+  // _.concat(array.splice(shift, array.length), array.splice(0, shift))
 );
 
 module.exports = {
