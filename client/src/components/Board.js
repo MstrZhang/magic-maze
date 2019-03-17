@@ -1,23 +1,83 @@
+import gql from 'graphql-tag';
 import React, { Component } from 'react';
 import Viewport from 'pixi-viewport';
 import * as PIXI from 'pixi.js';
+import client from '../common/utils';
 import spritesheet from '../assets/spritesheet.png';
 import './Board.css';
 
+// constants
 const SCALE = 4;
 const TILE_SIZE = 16;
-const X_OFFSET = 140;
+const MAZE_SIZE = 64;
+const X_OFFSET = 350;
 const Y_OFFSET = 80;
+
+// character objects
+let selected = '';
+const players = [];
+
+/**
+ * load all the maze tiles
+ * traverses file and maps all the images
+ * @param {*} r regex
+ */
+function importAll(r) {
+  return r.keys().map(r);
+}
+const images = importAll(require.context('../assets/maze/', false, /\.(png|jpe?g|svg)$/));
 
 // create board
 const app = new PIXI.Application({
   width: window.innerWidth,
   height: window.innerHeight,
-  resolution: SCALE,
 });
 app.renderer.backgroundColor = 0x334D5C;
 // set the scale mode (makes it so the pixels aren't blurry when scaling)
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+
+// move characters based on selected option
+/**
+ * move the selected character
+ * move algorithm:/
+ * - calculate the delta between the click and the character's position
+ * - convert delta to the number of tile spaces to increase this by
+ *     (i.e. this should return the number of tiles moved; integer between 0 and n)
+ * - scale up the coordinate to the actual coordinate
+ * @param {*} e click event
+ */
+function move(e) {
+  if (selected) {
+    const endX = players[selected].x + Math.floor((e.world.x - players[selected].x)
+     / (TILE_SIZE * SCALE)) * (TILE_SIZE * SCALE);
+    const endY = players[selected].y + Math.floor((e.world.y - players[selected].y)
+     / (TILE_SIZE * SCALE)) * (TILE_SIZE * SCALE);
+
+    const deltaX = (endX - X_OFFSET) / (TILE_SIZE * SCALE);
+    const deltaY = (endY - Y_OFFSET) / (TILE_SIZE * SCALE);
+    const mutation = gql`
+      mutation {
+        moveCharacter(
+          gameStateID: "5c8c55d0f0c3cd64e4978980",
+          userID: null,
+          characterColour: "${selected}",
+          endTileCoords:{ x: ${deltaX}, y: ${deltaY} },
+        ) {
+          _id
+          colour
+          coordinates {
+            x
+            y
+          }
+        }
+      }
+    `;
+    client().mutate({ mutation }).then((results) => {
+      players[selected].x = results.data.moveCharacter.coordinates.x * TILE_SIZE * SCALE + X_OFFSET;
+      players[selected].y = results.data.moveCharacter.coordinates.y * TILE_SIZE * SCALE + Y_OFFSET;
+    });
+  }
+}
 
 // create viewport
 const viewport = new Viewport({
@@ -25,7 +85,6 @@ const viewport = new Viewport({
   screenHeight: window.innerHeight,
   interaction: app.renderer.plugins.interaction,
 });
-
 // add and setup the viewport to the stage
 // this must be done before adding any sprites
 app.stage.addChild(viewport);
@@ -33,135 +92,93 @@ viewport
   .drag()
   .pinch()
   .wheel()
-  .decelerate();
+  .decelerate()
+  .on('clicked', move);
 
-function setup() {
-  // render the character
-  const characterTexture = new PIXI.Texture(
+/**
+ * create a new character
+ * @param {*} offset offset value in the spritesheet (hard-coded)
+ * @param {*} data the character JSON
+ */
+function createCharacter(offset, data) {
+  const texture = new PIXI.Texture(
     PIXI.utils.TextureCache[spritesheet],
-    new PIXI.Rectangle(0, 0, TILE_SIZE, TILE_SIZE),
+    new PIXI.Rectangle(offset * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE),
   );
-  const character = new PIXI.Sprite(characterTexture);
-  character.x = (1 * TILE_SIZE) + X_OFFSET;
-  character.y = (1 * TILE_SIZE) + Y_OFFSET;
-
-  // render the tilemap (proof of concept)
-  const container = new PIXI.Container();
-  container.x = 0 + X_OFFSET;
-  container.y = 0 + Y_OFFSET;
-
-  /*
-    0 = floor
-    1 = tl-corner
-    2 = top-wall
-    3 = tr-corner
-    4 = bl-corner
-    5 = br-corner
-    6 = bottom-wall
-  */
-  const map = [
-    [1, 2, 2, 3],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [4, 6, 6, 5],
-  ];
-
-  // this is kind of disgusting
-  // will probably do an initial load of all textures in the beginning or something
-  const tlCornerTexture = new PIXI.Texture(
-    PIXI.utils.TextureCache[spritesheet],
-    new PIXI.Rectangle(2 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE),
-  );
-  const trCornerTexture = new PIXI.Texture(
-    PIXI.utils.TextureCache[spritesheet],
-    new PIXI.Rectangle(3 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE),
-  );
-  const blCornerTexture = new PIXI.Texture(
-    PIXI.utils.TextureCache[spritesheet],
-    new PIXI.Rectangle(4 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE),
-  );
-  const brCornerTexture = new PIXI.Texture(
-    PIXI.utils.TextureCache[spritesheet],
-    new PIXI.Rectangle(5 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE),
-  );
-  const floorTexture = new PIXI.Texture(
-    PIXI.utils.TextureCache[spritesheet],
-    new PIXI.Rectangle(5 * TILE_SIZE, 0 * TILE_SIZE, TILE_SIZE, TILE_SIZE),
-  );
-  const topWallTexture = new PIXI.Texture(
-    PIXI.utils.TextureCache[spritesheet],
-    new PIXI.Rectangle(7 * TILE_SIZE, 0 * TILE_SIZE, TILE_SIZE, TILE_SIZE),
-  );
-  const bottomWallTexture = new PIXI.Texture(
-    PIXI.utils.TextureCache[spritesheet],
-    new PIXI.Rectangle(1 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE),
-  );
-
-  // same with this
-  for (let row = 0; row < map.length; row += 1) {
-    for (let col = 0; col < map[row].length; col += 1) {
-      let tile = null;
-      switch (map[col][row]) {
-        case 0:
-          tile = new PIXI.Sprite(floorTexture);
-          tile.x = row * TILE_SIZE;
-          tile.y = col * TILE_SIZE;
-          container.addChild(tile);
-          break;
-        case 1:
-          tile = new PIXI.Sprite(tlCornerTexture);
-          tile.x = row * TILE_SIZE;
-          tile.y = col * TILE_SIZE;
-          container.addChild(tile);
-          break;
-        case 2:
-          tile = new PIXI.Sprite(topWallTexture);
-          tile.x = row * TILE_SIZE;
-          tile.y = col * TILE_SIZE;
-          container.addChild(tile);
-          break;
-        case 3:
-          tile = new PIXI.Sprite(trCornerTexture);
-          tile.x = row * TILE_SIZE;
-          tile.y = col * TILE_SIZE;
-          container.addChild(tile);
-          break;
-        case 4:
-          tile = new PIXI.Sprite(blCornerTexture);
-          tile.x = row * TILE_SIZE;
-          tile.y = col * TILE_SIZE;
-          container.addChild(tile);
-          break;
-        case 5:
-          tile = new PIXI.Sprite(brCornerTexture);
-          tile.x = row * TILE_SIZE;
-          tile.y = col * TILE_SIZE;
-          container.addChild(tile);
-          break;
-        case 6:
-          tile = new PIXI.Sprite(bottomWallTexture);
-          tile.x = row * TILE_SIZE;
-          tile.y = col * TILE_SIZE;
-          container.addChild(tile);
-          break;
-        default:
-          break;
-      }
-    }
-  }
-
-  // must add to viewport (adding to stage will not allow it to scroll)
-  viewport.addChild(container);
-  viewport.addChild(character);
+  const character = new PIXI.Sprite(texture);
+  character.x = data.coordinates.x * (TILE_SIZE * SCALE) + X_OFFSET;
+  character.y = data.coordinates.y * (TILE_SIZE * SCALE) + Y_OFFSET;
+  character.scale.set(SCALE, SCALE);
+  character.interactive = true;
+  // sprite handling can only be caught using 'click'
+  // (this is different from the viewport for some reason...)
+  character.on('click', () => {
+    selected = selected === '' || selected !== data.colour ? data.colour : '';
+  });
+  return character;
 }
 
-// load character from spritesheet
-// let loader = new Loader();
+/**
+ * call backend and do initial setup
+ */
+const setup = () => {
+  const query = gql`
+    {
+      gameState(gameStateID: "5c8c55d0f0c3cd64e4978980") {
+        mazeTiles {
+          cornerCoordinates {
+            x
+            y
+          }
+          spriteID
+        }
+        characters {
+          colour
+          coordinates {
+            x
+            y
+          }
+        }
+      }
+    }
+  `;
+  client().query({ query }).then((results) => {
+    // render and create characters
+    players.red = createCharacter(3, results.data.gameState.characters.find(x => x.colour === 'red'));
+    players.purple = createCharacter(0, results.data.gameState.characters.find(x => x.colour === 'purple'));
+    players.blue = createCharacter(1, results.data.gameState.characters.find(x => x.colour === 'blue'));
+    players.green = createCharacter(2, results.data.gameState.characters.find(x => x.colour === 'green'));
+
+    // render initial maze tile
+    // TODO: perhaps abstract this into a separate function
+    const startTileTexture = new PIXI.Texture(
+      PIXI.utils.TextureCache[images[0]],
+      new PIXI.Rectangle(0, 0, MAZE_SIZE, MAZE_SIZE),
+    );
+    const startTile = new PIXI.Sprite(startTileTexture);
+    startTile.x = X_OFFSET;
+    startTile.y = Y_OFFSET;
+    startTile.scale.set(SCALE, SCALE);
+
+    // add actors to the viewport
+    // (cannot add to stage otherwise scrolling will not work)
+    viewport.addChild(startTile);
+    viewport.addChild(players.red);
+    viewport.addChild(players.purple);
+    viewport.addChild(players.blue);
+    viewport.addChild(players.green);
+  });
+};
+
+// load sprites
+const spriteList = [{ url: spritesheet }];
+// we read all the images in the beginning
+// then add them all to this object to get the loader to load everything
+images.forEach((url) => {
+  spriteList.push(url);
+});
 PIXI.Loader.shared
-  .add([{
-    name: 'spritesheet',
-    url: spritesheet,
-  }])
+  .add(spriteList)
   .load(setup);
 
 class Board extends Component {

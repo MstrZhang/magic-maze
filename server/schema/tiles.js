@@ -39,6 +39,7 @@ module.exports = gql`
     gameStateID: ID!
     coordinates: Coordinates
     neighbours: [ID]
+    escalatorID: Int!
   }
 
   type Vortex implements Tile {

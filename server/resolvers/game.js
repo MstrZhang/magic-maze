@@ -15,7 +15,7 @@ const mazeTileCreation = async (gameStateID, models) => {
   const mazeTileResult = [];
   // Creates all MazeTile objects and insert to DB
   for (let i = 0; i < 12; i += 1) {
-    const cornerCoordinates = i === 0 ? { x: 0, y: 0 } : {};
+    const cornerCoordinates = i === 0 ? { x: 0, y: 0 } : null;
     const initialMazeTile = {
       _id: ObjectId(),
       orientation: 0,

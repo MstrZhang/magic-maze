@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 const shuffle = (array) => {
   let ctr = array.length;
   let temp;
@@ -17,4 +19,11 @@ const shuffle = (array) => {
   return array;
 };
 
-module.exports = { shuffle };
+const rotateList = (array, steps) => (
+  _.concat(_.drop(array, steps), _.take(array, array.length - steps))
+);
+
+module.exports = {
+  shuffle,
+  rotateList,
+};

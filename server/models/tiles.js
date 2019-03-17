@@ -17,6 +17,7 @@ const tile = new mongoose.Schema({
   colour: { type: String },
   used: { type: Boolean }, // Time tiles
   searched: { type: Boolean }, // Search tiles
+  escalatorID: { type: Number },
 });
 
 module.exports = {
