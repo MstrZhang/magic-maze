@@ -62,68 +62,68 @@ const MAZETILE_1_TILE_NEIGHBOUR_CONFIG = [
 
 const MAZETILE_2_TILE_NEIGHBOUR_CONFIG = [
   { type: NORMAL_TYPE, neighbours: [-1, -1, 4, 1] },
-  { type: ESCALATOR_TYPE, neighbours: [-1, 0, -1, -1], escalatorID: 0 },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
+  { type: ESCALATOR_TYPE, neighbours: [-1, 0, 5, 2], escalatorID: 0 },
+  { type: WALL_TYPE, neighbours: [-1, -1, 6, 3] },
+  { type: WALL_TYPE, neighbours: [-1, 2, 7, -1] },
 
-  { type: SEARCH_TYPE, neighbours: [0, null, 8, -1], colour: BLUE, searched: false },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: ESCALATOR_TYPE, neighbours: [-1, -1, 10, -1], escalatorID: 0 },
+  { type: SEARCH_TYPE, neighbours: [0, null, 8, 5], colour: BLUE, searched: false },
+  { type: WALL_TYPE, neighbours: [1, 4, 9, 6] },
+  { type: ESCALATOR_TYPE, neighbours: [2, 5, 10, -1], escalatorID: 0 },
   { type: VORTEX_TYPE, neighbours: [-1, -1, 11, -1], colour: RED },
 
-  { type: ESCALATOR_TYPE, neighbours: [4, -1, 12, -1], escalatorID: 1 },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: NORMAL_TYPE, neighbours: [6, -1, 14, 11] },
+  { type: ESCALATOR_TYPE, neighbours: [4, -1, 12, 9], escalatorID: 1 },
+  { type: WALL_TYPE, neighbours: [5, 8, 13, 10] },
+  { type: NORMAL_TYPE, neighbours: [6, 9, 14, 11] },
   { type: ENTRY_TYPE, neighbours: [7, 10, 15, null] },
 
   { type: EXIT_TYPE, neighbours: [8, -1, -1, -1], colour: RED },
-  { type: ESCALATOR_TYPE, neighbours: [-1, -1, -1, 14], escalatorID: 1 },
+  { type: ESCALATOR_TYPE, neighbours: [9, -1, -1, 14], escalatorID: 1 },
   { type: NORMAL_TYPE, neighbours: [10, 13, -1, -1] },
   { type: VORTEX_TYPE, neighbours: [11, -1, -1, -1], colour: PURPLE },
 ];
 
 const MAZETILE_3_TILE_NEIGHBOUR_CONFIG = [
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: VORTEX_TYPE, neighbours: [-1, -1, -1, 2], colour: PURPLE },
+  { type: WALL_TYPE, neighbours: [-1, -1, 4, 1] },
+  { type: VORTEX_TYPE, neighbours: [-1, 0, 5, 2], colour: PURPLE },
   { type: ENTRY_TYPE, neighbours: [null, 1, 6, 3] },
   { type: VORTEX_TYPE, neighbours: [-1, 2, 7, -1], colour: GREEN },
 
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: NORMAL_TYPE, neighbours: [2, -1, -1, 7] },
+  { type: WALL_TYPE, neighbours: [0, null, 8, 5] },
+  { type: WALL_TYPE, neighbours: [1, 4, 9, 6] },
+  { type: NORMAL_TYPE, neighbours: [2, 5, 10, 7] },
   { type: ESCALATOR_TYPE, neighbours: [3, 6, 11, -1], escalatorID: 0 },
 
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: SEARCH_TYPE, neighbours: [7, -1, -1, null], colour: RED, searched: false },
+  { type: WALL_TYPE, neighbours: [4, -1, 12, 9] },
+  { type: WALL_TYPE, neighbours: [5, 8, 13, 10] },
+  { type: WALL_TYPE, neighbours: [6, 9, 14, 11] },
+  { type: SEARCH_TYPE, neighbours: [7, 10, 15, null], colour: RED },
 
-  { type: EXIT_TYPE, neighbours: [-1, -1, -1, 13], colour: PURPLE },
-  { type: ESCALATOR_TYPE, neighbours: [-1, 12, -1, -1], escalatorID: 0 },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
+  { type: EXIT_TYPE, neighbours: [8, -1, -1, 13], coluor: PURPLE },
+  { type: ESCALATOR_TYPE, neighbours: [9, 12, null, 14], escalatorID: 0 },
+  { type: WALL_TYPE, neighbours: [10, 13, -1, 15] },
+  { type: WALL_TYPE, neighbours: [11, 14, -1, -1] },
 ];
 
 const MAZETILE_4_TILE_NEIGHBOUR_CONFIG = [
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: SEARCH_TYPE, neighbours: [null, -1, 6, -1], colour: BLUE, searched: false },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
+  { type: WALL_TYPE, neighbours: [-1, -1, 4, 1] },
+  { type: WALL_TYPE, neighbours: [-1, 0, 5, 2] },
+  { type: SEARCH_TYPE, neighbours: [null, 1, 6, 3], colour: BLUE, searched: false },
+  { type: WALL_TYPE, neighbours: [-1, 2, 7, -1] },
 
-  { type: VORTEX_TYPE, neighbours: [-1, -1, 8, -1], colour: RED },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: ESCALATOR_TYPE, neighbours: [2, -1, -1, 7], escalatorID: 0 },
-  { type: NORMAL_TYPE, neighbours: [-1, 6, 11, -1] },
+  { type: VORTEX_TYPE, neighbours: [0, -1, 8, 5], colour: RED },
+  { type: WALL_TYPE, neighbours: [1, 4, 9, 6] },
+  { type: ESCALATOR_TYPE, neighbours: [2, 5, 10, 7], escalatorID: 0 },
+  { type: NORMAL_TYPE, neighbours: [3, 6, 11, -1] },
 
   { type: NORMAL_TYPE, neighbours: [4, -1, 12, 9] },
-  { type: ESCALATOR_TYPE, neighbours: [-1, 8, 13, -1], escalatorID: 0 },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: ENTRY_TYPE, neighbours: [7, -1, 15, null] },
-
+  { type: ESCALATOR_TYPE, neighbours: [5, 8, 13, 10], escalatorID: 0 },
+  { type: WALL_TYPE, neighbours: [6, 9, 14, 11] },
+  { type: ENTRY_TYPE, neighbours: [7, 10, 15, null] },
+  
   { type: EXIT_TYPE, neighbours: [8, -1, -1, -1], colour: GREEN },
-  { type: SEARCH_TYPE, neighbours: [9, -1, null, -1], colour: PURPLE, searched: false },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: VORTEX_TYPE, neighbours: [11, -1, -1, -1], colour: GREEN },
+  { type: SEARCH_TYPE, neighbours: [9, -1, null, 14], colour: PURPLE, searched: false },
+  { type: WALL_TYPE, neighbours: [10, 13, -1, 15] },
+  { type: VORTEX_TYPE, neighbours: [11, 14, -1, -1], colour: GREEN },
 ];
 
 const MAZETILE_5_TILE_NEIGHBOUR_CONFIG = [
@@ -193,25 +193,25 @@ const MAZETILE_7_TILE_NEIGHBOUR_CONFIG = [
 ];
 
 const MAZETILE_8_TILE_NEIGHBOUR_CONFIG = [
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: ITEM_TYPE, neighbours: [-1, -1, -1, 2], colour: RED },
-  { type: NORMAL_TYPE, neighbours: [-1, 1, 6, -1] },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
+  { type: WALL_TYPE, neighbours: [-1, -1, 4, 1] },
+  { type: ITEM_TYPE, neighbours: [-1, 0, 5, 2], colour: RED },
+  { type: NORMAL_TYPE, neighbours: [-1, 1, 6, 3] },
+  { type: WALL_TYPE, neighbours: [-1, 2, 7, -1] },
 
-  { type: ENTRY_TYPE, neighbours: [-1, null, -1, 5] },
-  { type: ESCALATOR_TYPE, neighbours: [-1, 4, -1, -1], escalatorID: 0 },
-  { type: NORMAL_TYPE, neighbours: [2, -1, 10, -1] },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
+  { type: ENTRY_TYPE, neighbours: [0, null, 8, 5] },
+  { type: ESCALATOR_TYPE, neighbours: [-1, 4, 9, -1], escalatorID: 0 },
+  { type: NORMAL_TYPE, neighbours: [2, -1, 10, 7] },
+  { type: WALL_TYPE, neighbours: [3, 6, 11, -1] },
 
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: ESCALATOR_TYPE, neighbours: [6, -1, 14, 11], escalatorID: 0 },
-  { type: VORTEX_TYPE, neighbours: [-1, 10, -1, -1], colour: GREEN },
+  { type: WALL_TYPE, neighbours: [4, -1, 12, 9] },
+  { type: WALL_TYPE, neighbours: [5, 8, 13, 10] },
+  { type: ESCALATOR_TYPE, neighbours: [6, 9, 14, 11], escalatorID: 0 },
+  { type: VORTEX_TYPE, neighbours: [7, 10, 15, -1], colour: GREEN },
 
-  { type: VORTEX_TYPE, neighbours: [-1, -1, -1, 13], colour: BLUE },
-  { type: SEARCH_TYPE, neighbours: [-1, 12, null, 14], colour: PURPLE, searched: false },
-  { type: NORMAL_TYPE, neighbours: [10, 13, -1, -1] },
-  { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
+  { type: VORTEX_TYPE, neighbours: [8, -1, -1, 13], colour: BLUE },
+  { type: SEARCH_TYPE, neighbours: [9, 12, null, 14], colour: PURPLE, searched: false },
+  { type: NORMAL_TYPE, neighbours: [10, 13, -1, 15] },
+  { type: WALL_TYPE, neighbours: [11, 14, -1, -1] },
 ];
 
 const MAZETILE_9_TILE_NEIGHBOUR_CONFIG = [
