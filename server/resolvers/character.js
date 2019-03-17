@@ -175,7 +175,7 @@ const updateAdjacentMazeTiles = async (
     searched: false,
   }).toArray();
 
-  await Promise.all(searchTiles.forEach(async (tile) => {
+  searchTiles.forEach(async (tile) => {
     const direction = _.findIndex(tile.neighbours, t => t === null);
     let coordinatesToFind;
     switch (direction) {
@@ -221,7 +221,7 @@ const updateAdjacentMazeTiles = async (
         },
       });
     }
-  }));
+  });
 };
 
 const setCornerCoordinate = async (gameStateID,
@@ -417,7 +417,7 @@ module.exports = {
 
       const entryTile = await models.Tile.findOne({
         gameStateID: ObjectId(gameStateID),
-        mazeTileID: ObjectId(nextMazeTile._id),
+        mazeTileID: nextMazeTile._id,
         type: ENTRY_TYPE,
       });
 
