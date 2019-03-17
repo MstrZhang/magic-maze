@@ -175,6 +175,7 @@ const updateAdjacentMazeTiles = async (
     searched: false,
   }).toArray();
 
+  // not a promise so we don't need await Promise.all(...)
   searchTiles.forEach(async (tile) => {
     const direction = _.findIndex(tile.neighbours, t => t === null);
     let coordinatesToFind;
@@ -417,7 +418,7 @@ module.exports = {
 
       const entryTile = await models.Tile.findOne({
         gameStateID: ObjectId(gameStateID),
-        mazeTileID: nextMazeTile._id,
+        mazeTileID: nextMazeTile._id, // didn't cast to ObjectId
         type: ENTRY_TYPE,
       });
 
