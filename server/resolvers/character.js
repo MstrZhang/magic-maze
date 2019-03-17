@@ -373,7 +373,6 @@ module.exports = {
     searchAction: async (_parent, {
       gameStateID,
       characterCoords,
-      searchTileCoords,
     }, { models }) => {
       /**
        * First we must check there are tile to pop out of gameState
@@ -406,7 +405,7 @@ module.exports = {
       const searchTile = await models.Tile
         .findOne({
           gameStateID: ObjectId(gameStateID),
-          coordinates: searchTileCoords,
+          coordinates: characterCoords,
           type: SEARCH_TYPE,
           colour: character.colour,
         });
