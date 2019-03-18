@@ -2,6 +2,9 @@ import gql from 'graphql-tag';
 import React, { Component } from 'react';
 import Viewport from 'pixi-viewport';
 import * as PIXI from 'pixi.js';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import client from '../common/utils';
 import spritesheet from '../assets/spritesheet.png';
 import './Board.css';
@@ -12,10 +15,19 @@ const TILE_SIZE = 16;
 const MAZE_SIZE = 64;
 const X_OFFSET = 350;
 const Y_OFFSET = 80;
+const GAME_ID = '5c8ef011d52d7f8251f9072c';
+
+// containers
+// (this is used for layering)
+const characterContainer = new PIXI.Container();
+const mazeContainer = new PIXI.Container();
 
 // character objects
 let selected = '';
 const players = [];
+
+// fontawesome
+library.add(faSearch);
 
 /**
  * load all the maze tiles
@@ -36,9 +48,8 @@ app.renderer.backgroundColor = 0x334D5C;
 // set the scale mode (makes it so the pixels aren't blurry when scaling)
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-// move characters based on selected option
 /**
- * move the selected character
+ * move the selected character based on selected option
  * move algorithm:/
  * - calculate the delta between the click and the character's position
  * - convert delta to the number of tile spaces to increase this by
@@ -58,7 +69,7 @@ function move(e) {
     const mutation = gql`
       mutation {
         moveCharacter(
-          gameStateID: "5c8c55d0f0c3cd64e4978980",
+          gameStateID: "${GAME_ID}",
           userID: null,
           characterColour: "${selected}",
           endTileCoords:{ x: ${deltaX}, y: ${deltaY} },
@@ -124,13 +135,14 @@ function createCharacter(offset, data) {
 const setup = () => {
   const query = gql`
     {
-      gameState(gameStateID: "5c8c55d0f0c3cd64e4978980") {
+      gameState(gameStateID: "${GAME_ID}") {
         mazeTiles {
           cornerCoordinates {
             x
             y
           }
           spriteID
+          orientation
         }
         characters {
           colour
@@ -160,13 +172,34 @@ const setup = () => {
     startTile.y = Y_OFFSET;
     startTile.scale.set(SCALE, SCALE);
 
-    // add actors to the viewport
+    // render pre-existing maze tiles
+    const tiles = results.data.gameState.mazeTiles.filter(x => x.cornerCoordinates !== null);
+    tiles.forEach((tile) => {
+      const texture = new PIXI.Texture(
+        PIXI.utils.TextureCache[require(`../assets/maze/${tile.spriteID}.png`)],
+        new PIXI.Rectangle(0, 0, MAZE_SIZE, MAZE_SIZE),
+      );
+      const newTile = new PIXI.Sprite(texture);
+      newTile.x = tile.cornerCoordinates.x * (TILE_SIZE * SCALE) + X_OFFSET + (MAZE_SIZE / 2) * 4;
+      newTile.y = tile.cornerCoordinates.y * (TILE_SIZE * SCALE) + Y_OFFSET + (MAZE_SIZE / 2) * 4;
+      newTile.pivot.set(MAZE_SIZE / 2);
+      newTile.scale.set(SCALE, SCALE);
+      newTile.angle = tile.orientation * (-90);
+      mazeContainer.addChild(newTile);
+    });
+
+    // add actors to containers
+    // (we do this to manipulate the z-index properly)
+    mazeContainer.addChild(startTile);
+    characterContainer.addChild(players.red);
+    characterContainer.addChild(players.purple);
+    characterContainer.addChild(players.blue);
+    characterContainer.addChild(players.green);
+
+    // add containers to viewport
     // (cannot add to stage otherwise scrolling will not work)
-    viewport.addChild(startTile);
-    viewport.addChild(players.red);
-    viewport.addChild(players.purple);
-    viewport.addChild(players.blue);
-    viewport.addChild(players.green);
+    viewport.addChild(mazeContainer);
+    viewport.addChild(characterContainer);
   });
 };
 
@@ -181,6 +214,50 @@ PIXI.Loader.shared
   .add(spriteList)
   .load(setup);
 
+/**
+ * search for a new maze tile upon encountering a search tile
+ */
+function search() {
+  if (selected) {
+    const x = (players[selected].x - X_OFFSET) / (TILE_SIZE * SCALE);
+    const y = (players[selected].y - Y_OFFSET) / (TILE_SIZE * SCALE);
+    const mutation = gql`
+      mutation{
+        searchAction (
+          gameStateID: "${GAME_ID}",
+          characterCoords: { x: ${x}, y: ${y} },
+        ) {
+          spriteID
+          orientation
+          cornerCoordinates {
+            x
+            y
+          }
+        }
+      }
+    `;
+    client().mutate({ mutation }).then((results) => {
+      const newTileTexture = new PIXI.Texture(
+        PIXI.utils.TextureCache[require(`../assets/maze/${results.data.searchAction.spriteID}.png`)],
+        new PIXI.Rectangle(0, 0, MAZE_SIZE, MAZE_SIZE),
+      );
+      const newTile = new PIXI.Sprite(newTileTexture);
+      // adding a pivot affects the position of the tile
+      // must offset by (WIDTH / 2) * SCALE to counteract this
+      newTile.x = results.data.searchAction.cornerCoordinates.x * (TILE_SIZE * SCALE) + X_OFFSET
+       + (MAZE_SIZE / 2) * 4;
+      newTile.y = results.data.searchAction.cornerCoordinates.y * (TILE_SIZE * SCALE) + Y_OFFSET
+       + (MAZE_SIZE / 2) * 4;
+      // add pivot in the centre of the tile
+      newTile.pivot.set(MAZE_SIZE / 2);
+      newTile.scale.set(SCALE, SCALE);
+      // start tiles are rotated counterclockwise for god knows why
+      newTile.angle = results.data.searchAction.orientation * (-90);
+      mazeContainer.addChild(newTile);
+    });
+  }
+}
+
 class Board extends Component {
   // serve board
   componentDidMount() {
@@ -192,12 +269,18 @@ class Board extends Component {
     return (
       <div>
         {/* temporarily remove sidenav (not required for singleplayer) */}
-        {/* <div className="sidenav">
+        <div className="sidenav">
           <div className="player">kev</div>
           <div className="player">rakin</div>
           <div className="player">luc</div>
           <div className="player">not-luc</div>
-        </div> */}
+          <button className="btn btn-lg btn-warning" type="button">
+            test
+          </button>
+          <button className="btn btn-lg btn-primary" type="button" onClick={() => search()}>
+            <FontAwesomeIcon icon="search" />
+          </button>
+        </div>
         <div id="board" />
       </div>
     );
