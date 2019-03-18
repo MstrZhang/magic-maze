@@ -1,0 +1,138 @@
+{
+	"_type": "export",
+	"__export_format": 3,
+	"__export_date": "2019-03-12T02:48:17.376Z",
+	"__export_source": "insomnia.desktop.app:v6.3.2",
+	"resources": [
+		{
+			"_id": "wrk_ecd038edc0954f5dbe89db7eef93442a",
+			"created": 1551807919105,
+			"description": "Contains the API endpoints for the Magic Maze backend",
+			"modified": 1551808168965,
+			"name": "MagicMaze",
+			"parentId": null,
+			"_type": "workspace"
+		},
+		{
+			"_id": "env_6b43b03441164d5ca0c9627077482362",
+			"color": null,
+			"created": 1551807919121,
+			"data": {
+				"HOST": "localhost:8000"
+			},
+			"isPrivate": false,
+			"metaSortKey": 1551807919121,
+			"modified": 1551808339861,
+			"name": "New Environment",
+			"parentId": "wrk_ecd038edc0954f5dbe89db7eef93442a",
+			"_type": "environment"
+		},
+		{
+			"_id": "jar_778565ec105548f19ea5cbafaf24d4ca",
+			"cookies": [],
+			"created": 1551807919125,
+			"modified": 1551807919125,
+			"name": "Default Jar",
+			"parentId": "wrk_ecd038edc0954f5dbe89db7eef93442a",
+			"_type": "cookie_jar"
+		},
+		{
+			"_id": "fld_2735ca6c0cb74bdf9c517a3c1c8580cf",
+			"created": 1551808413306,
+			"description": "",
+			"environment": {},
+			"metaSortKey": -1551808413306,
+			"modified": 1551808413306,
+			"name": "Tiles",
+			"parentId": "wrk_ecd038edc0954f5dbe89db7eef93442a",
+			"_type": "request_group"
+		},
+		{
+			"_id": "req_0b7af35d46784da1a44a2d857b2c2af9",
+			"authentication": {},
+			"body": {},
+			"created": 1551808351630,
+			"description": "",
+			"headers": [],
+			"isPrivate": false,
+			"metaSortKey": -1551808351630,
+			"method": "GET",
+			"modified": 1551808379395,
+			"name": "Healthcheck",
+			"parameters": [],
+			"parentId": "wrk_ecd038edc0954f5dbe89db7eef93442a",
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingMaxTimelineDataSize": 1000,
+			"settingRebuildPath": true,
+			"settingSendCookies": true,
+			"settingStoreCookies": true,
+			"url": "{{ HOST  }}/.well-known/apollo/server-health/",
+			"_type": "request"
+		},
+		{
+			"_id": "req_bfa435096c6d40118d633c950dcde4f9",
+			"authentication": {},
+			"body": {
+				"mimeType": "application/graphql",
+				"text": "{\"query\":\"{\\n  tile(tileID: \\\"5c86fb441c9d440000856f18\\\") {\\n    mazeTile\\n  }\\n}\"}"
+			},
+			"created": 1551808428788,
+			"description": "",
+			"headers": [
+				{
+					"id": "pair_41d7cc398bff4da798c4555692ddd239",
+					"name": "Content-Type",
+					"value": "application/json"
+				}
+			],
+			"isPrivate": false,
+			"metaSortKey": -1551808428788,
+			"method": "POST",
+			"modified": 1552358592049,
+			"name": "tile",
+			"parameters": [],
+			"parentId": "fld_2735ca6c0cb74bdf9c517a3c1c8580cf",
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingMaxTimelineDataSize": 1000,
+			"settingRebuildPath": true,
+			"settingSendCookies": true,
+			"settingStoreCookies": true,
+			"url": "{{ HOST  }}/server/graphql",
+			"_type": "request"
+		},
+		{
+			"_id": "req_9d9421b3a06142809d928926e237e1e2",
+			"authentication": {},
+			"body": {
+				"mimeType": "application/graphql",
+				"text": "{\"query\":\"{\\n  tiles(mazeTileID: \\\"5c86fb441c9d440000856f18\\\") {\\n    _id\\n  }\\n}\"}"
+			},
+			"created": 1552356428534,
+			"description": "",
+			"headers": [
+				{
+					"id": "pair_1bf89bb2743a4de4b3cce46205d4d076",
+					"name": "Content-Type",
+					"value": "application/json"
+				}
+			],
+			"isPrivate": false,
+			"metaSortKey": -1552356428534,
+			"method": "POST",
+			"modified": 1552358593691,
+			"name": "tiles",
+			"parameters": [],
+			"parentId": "fld_2735ca6c0cb74bdf9c517a3c1c8580cf",
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingMaxTimelineDataSize": 1000,
+			"settingRebuildPath": true,
+			"settingSendCookies": true,
+			"settingStoreCookies": true,
+			"url": "{{ HOST  }}/server/graphql",
+			"_type": "request"
+		}
+	]
+}
