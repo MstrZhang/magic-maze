@@ -91,7 +91,7 @@ const MAZETILE_3_TILE_NEIGHBOUR_CONFIG = [
   { type: WALL_TYPE, neighbours: [0, null, 8, 5] },
   { type: WALL_TYPE, neighbours: [1, 4, 9, 6] },
   { type: NORMAL_TYPE, neighbours: [2, 5, 10, 7] },
-  { type: ESCALATOR_TYPE, neighbours: [3, 6, 11, -1], escalatorID: 0 },
+  { type: ESCALATOR_TYPE, neighbours: [3, 6, 11, -1], escalatorID: 2 },
 
   { type: WALL_TYPE, neighbours: [4, -1, 12, 9] },
   { type: WALL_TYPE, neighbours: [5, 8, 13, 10] },
@@ -99,7 +99,7 @@ const MAZETILE_3_TILE_NEIGHBOUR_CONFIG = [
   { type: SEARCH_TYPE, neighbours: [7, 10, 15, null], colour: RED, searched: false },
 
   { type: EXIT_TYPE, neighbours: [8, -1, -1, 13], colour: PURPLE },
-  { type: ESCALATOR_TYPE, neighbours: [9, 12, null, 14], escalatorID: 0 },
+  { type: ESCALATOR_TYPE, neighbours: [9, 12, null, 14], escalatorID: 2 },
   { type: WALL_TYPE, neighbours: [10, 13, -1, 15] },
   { type: WALL_TYPE, neighbours: [11, 14, -1, -1] },
 ];
@@ -112,11 +112,11 @@ const MAZETILE_4_TILE_NEIGHBOUR_CONFIG = [
 
   { type: VORTEX_TYPE, neighbours: [0, -1, 8, 5], colour: RED },
   { type: WALL_TYPE, neighbours: [1, 4, 9, 6] },
-  { type: ESCALATOR_TYPE, neighbours: [2, 5, 10, 7], escalatorID: 0 },
+  { type: ESCALATOR_TYPE, neighbours: [2, 5, 10, 7], escalatorID: 3 },
   { type: NORMAL_TYPE, neighbours: [3, 6, 11, -1] },
 
   { type: NORMAL_TYPE, neighbours: [4, -1, 12, 9] },
-  { type: ESCALATOR_TYPE, neighbours: [5, 8, 13, 10], escalatorID: 0 },
+  { type: ESCALATOR_TYPE, neighbours: [5, 8, 13, 10], escalatorID: 3 },
   { type: WALL_TYPE, neighbours: [6, 9, 14, 11] },
   { type: ENTRY_TYPE, neighbours: [7, 10, 15, null] },
 
@@ -199,13 +199,13 @@ const MAZETILE_8_TILE_NEIGHBOUR_CONFIG = [
   { type: WALL_TYPE, neighbours: [-1, 2, 7, -1] },
 
   { type: ENTRY_TYPE, neighbours: [0, null, 8, 5] },
-  { type: ESCALATOR_TYPE, neighbours: [-1, 4, 9, -1], escalatorID: 0 },
+  { type: ESCALATOR_TYPE, neighbours: [-1, 4, 9, -1], escalatorID: 4 },
   { type: NORMAL_TYPE, neighbours: [2, -1, 10, 7] },
   { type: WALL_TYPE, neighbours: [3, 6, 11, -1] },
 
   { type: WALL_TYPE, neighbours: [4, -1, 12, 9] },
   { type: WALL_TYPE, neighbours: [5, 8, 13, 10] },
-  { type: ESCALATOR_TYPE, neighbours: [6, 9, 14, 11], escalatorID: 0 },
+  { type: ESCALATOR_TYPE, neighbours: [6, 9, 14, 11], escalatorID: 4 },
   { type: VORTEX_TYPE, neighbours: [7, 10, 15, -1], colour: GREEN },
 
   { type: VORTEX_TYPE, neighbours: [8, -1, -1, 13], colour: BLUE },
