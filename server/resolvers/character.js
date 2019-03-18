@@ -22,9 +22,9 @@ const vortexMovement = (gameState, startTile, endTile, character) => (
 );
 
 const escalatorMovement = (startTile, endTile) => (
-  true
-  // startTile.mazeTileID === endTile.mazeTileID
-  // && startTile.escalatorID === endTile.escalatorID
+  // true
+  // ObjectId(startTile.mazeTileID) === ObjectId(endTile.mazeTileID)
+  startTile.escalatorID === endTile.escalatorID
 );
 
 const moveDirection = async (gameState, characterColour, currTile, endTile, direction, models) => {
