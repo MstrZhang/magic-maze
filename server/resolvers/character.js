@@ -158,14 +158,14 @@ const updateAdjacentMazeTiles = async (
     models.Tile.findOneAndUpdate({
       _id: searchTileID,
       gameStateID,
-      'neighbours.$': null,
+      neighbours: { $type: 10 },
     }, {
       $set: { 'neighbours.$': entryTileID, searched: true },
     }),
     models.Tile.findOneAndUpdate({
       _id: entryTileID,
       gameStateID,
-      'neighbours.$': null,
+      neighbours: { $type: 10 },
     }, {
       $set: { 'neighbours.$': searchTileID },
     }),
@@ -204,7 +204,7 @@ const updateAdjacentMazeTiles = async (
     const adjTile = await models.Tile.findOneAndUpdate({
       gameStateID,
       coordinates: coordinatesToFind,
-      'neighbours.$': null,
+      neighbours: { $type: 10 },
     }, {
       $set: {
         searched: true,
@@ -217,7 +217,7 @@ const updateAdjacentMazeTiles = async (
       await models.Tile.findOneAndUpdate({
         gameStateID,
         _id: tile._id,
-        'neighbours.$': null,
+        neighbours: { $type: 10 },
       }, {
         $set: {
           searched: true,
