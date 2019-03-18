@@ -119,7 +119,7 @@ const MAZETILE_4_TILE_NEIGHBOUR_CONFIG = [
   { type: ESCALATOR_TYPE, neighbours: [5, 8, 13, 10], escalatorID: 0 },
   { type: WALL_TYPE, neighbours: [6, 9, 14, 11] },
   { type: ENTRY_TYPE, neighbours: [7, 10, 15, null] },
-  
+
   { type: EXIT_TYPE, neighbours: [8, -1, -1, -1], colour: GREEN },
   { type: SEARCH_TYPE, neighbours: [9, -1, null, 14], colour: PURPLE, searched: false },
   { type: WALL_TYPE, neighbours: [10, 13, -1, 15] },
@@ -276,7 +276,7 @@ const MAZETILE_11_TILE_NEIGHBOUR_CONFIG = [
 
   { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
   { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
-  { type: VORTEX_TYPE, neighbours: [10, -1, -1, -1] }, // TODO: (Kevin) add bottom wall to this tile in sprite
+  { type: VORTEX_TYPE, neighbours: [10, -1, -1, -1], colour: RED }, // TODO: (Kevin) add bottom wall to this tile in sprite
   { type: WALL_TYPE, neighbours: [-1, -1, -1, -1] },
 ];
 
