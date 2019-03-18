@@ -17,16 +17,13 @@ const {
 
 const vortexMovement = (gameState, startTile, endTile, character) => (
   gameState.vortexEnabled
-  && startTile.type === VORTEX_TYPE
-  && endTile.type === VORTEX_TYPE
   && startTile.colour === character.colour
   && endTile.colour === character.colour
 );
 
 const escalatorMovement = (startTile, endTile) => (
-  startTile.type === ESCALATOR_TYPE
-  && endTile.type === ESCALATOR_TYPE
-  && startTile.mazeTileID === endTile.mazeTileID
+  startTile.mazeTileID === endTile.mazeTileID
+  && startTile.escalatorID === endTile.escalatorID
 );
 
 const moveDirection = async (gameState, characterColour, currTile, endTile, direction, models) => {
@@ -316,12 +313,13 @@ module.exports = {
       let shouldMove = false;
       let movedStraightLine = false;
 
-      if (startTile.coordinates.x !== endTile.coordinates.x
-        && startTile.coordinates.y !== endTile.coordinates.y) {
+      if (startTile.type === VORTEX_TYPE && endTile.type === VORTEX_TYPE) {
         // Potentially vortex or escalator
-        shouldMove = vortexMovement(gameState, startTile, endTile, character)
-          || escalatorMovement(startTile, endTile);
-      } else if (startTile.coordinates.y !== endTile.coordinates.y) {
+        shouldMove = vortexMovement(gameState, startTile, endTile, character);
+      } else if (startTile.type === ESCALATOR_TYPE && endTile.type === ESCALATOR_TYPE) {
+        shouldMove = escalatorMovement(startTile, endTile);
+      } else if (startTile.coordinates.y !== endTile.coordinates.y
+        && startTile.coordinates.x === endTile.coordinates.x) {
         // Potentially up or down
         direction = startTile.coordinates.y > endTile.coordinates.y
           ? DIRECTIONS.UP
@@ -330,7 +328,8 @@ module.exports = {
           gameState, character.colour, startTile, endTile, direction, models,
         );
         movedStraightLine = shouldMove;
-      } else if (startTile.coordinates.x !== endTile.coordinates.x) {
+      } else if (startTile.coordinates.x !== endTile.coordinates.x
+        && startTile.coordinates.y === endTile.coordinates.y) {
         // Potentially left or right
         direction = startTile.coordinates.x > endTile.coordinates.x
           ? DIRECTIONS.LEFT
