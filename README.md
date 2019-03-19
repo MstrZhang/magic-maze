@@ -1,6 +1,7 @@
 # Magic Maze
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ddf7d97e9d2a44d6b15d8b0db34820e0)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=UTSCC09/project-magicmaze&amp;utm_campaign=Badge_Grade)
+[![CircleCI](https://circleci.com/gh/UTSCC09/project-magicmaze.svg?style=shield&circle-token=919148bff631b86af81101d8abf73ca8d070f8a2)](https://circleci.com/gh/UTSCC09/project-magicmaze)
 
 A game based off of the cooperative table-top game _Magic Maze_
 
