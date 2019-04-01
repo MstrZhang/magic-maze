@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { mazeTileSchema } = require('./mazetile');
 const { characterSchema } = require('./character');
+const { userSchema } = require('./user');
 
 const db = mongoose.createConnection(process.env.MONGODB_DEV, { useNewUrlParser: true });
 
@@ -13,6 +14,8 @@ const gameState = new mongoose.Schema({
   allCharactersEscaped: { type: Boolean, required: true },
   mazeTiles: [{ type: mazeTileSchema, required: true }],
   characters: [{ type: characterSchema, required: true }],
+  users: [{ type: userSchema, required: true }],
+  actions: [{ type: Number, required: true }],
 });
 
 module.exports = {

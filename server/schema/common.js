@@ -10,4 +10,14 @@ module.exports = gql`
     x: Int!
     y: Int!
   }
+
+  enum Action {
+    UP
+    LEFT
+    DOWN
+    RIGHT
+    SEARCH
+    ESCALATOR
+    VORTEX
+  }
 `;

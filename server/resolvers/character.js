@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const mongoose = require('mongoose');
+const { PubSub, withFilter } = require('apollo-server-express');
 
 const { ObjectId } = mongoose.Types;
 const logger = require('../common/logger');
@@ -13,7 +14,18 @@ const {
   ITEM_TYPE,
   ENTRY_TYPE,
   EXIT_TYPE,
+  TIME_TYPE,
+  TIME,
+  ENDTIME_UPDATED,
+  END_GAME,
+  ALL_ITEMS_CLAIMED,
+  MAZETILE_ADDED,
+  CHARACTER_COORDINATES_UPDATED,
+  CHARACTER_LOCK,
 } = require('../common/consts');
+const { Action } = require('./actionCard');
+
+const pubsub = new PubSub();
 
 const vortexMovement = (gameState, startTile, endTile, character) => (
   gameState.vortexEnabled
@@ -22,8 +34,6 @@ const vortexMovement = (gameState, startTile, endTile, character) => (
 );
 
 const escalatorMovement = (startTile, endTile) => (
-  // true
-  // ObjectId(startTile.mazeTileID) === ObjectId(endTile.mazeTileID)
   startTile.escalatorID === endTile.escalatorID
 );
 
@@ -56,29 +66,59 @@ const moveDirection = async (gameState, characterColour, currTile, endTile, dire
   );
 };
 
-const checkCharactersOnTile = async (gameState, tileType, models) => {
+const checkCharactersOnTile = async (gameStateID, tileType, models) => {
+  const { characters, allItemsClaimed } = await models.GameState
+    .findOne({ _id: gameStateID }, { _id: 0, characters: 1, allItemsClaimed: 1 });
   let counts;
-  if (tileType === EXIT_TYPE && gameState.allItemsClaimed) {
-    counts = await models.GameState
-      .countDocuments({ _id: ObjectId(gameState._id), 'characters.characterEscaped': true });
+  if (tileType === EXIT_TYPE && allItemsClaimed) {
+    counts = _.filter(characters, char => char.characterEscaped).length;
   } else if (tileType === ITEM_TYPE) {
-    counts = await models.GameState
-      .countDocuments({ _id: ObjectId(gameState._id), 'characters.itemClaimed': true });
+    counts = _.filter(characters, char => char.itemClaimed).length;
   }
 
   if (counts === 4) {
     if (tileType === EXIT_TYPE) {
+      pubsub.publish(END_GAME, { endGame: true, gameStateID });
       await models.GameState.updateOne(
-        { _id: ObjectId(gameState._id) },
-        { allCharactersEscaped: true },
+        { _id: gameStateID },
+        { $set: { allCharactersEscaped: true } },
       );
     } else if (tileType === ITEM_TYPE) {
-      await models.GameState.updateOne({ _id: ObjectId(gameState._id) }, {
-        allItemsClaimed: true,
-        vortexEnabled: false,
+      pubsub.publish(ALL_ITEMS_CLAIMED, { allItemsClaimed: true, gameStateID });
+      await models.GameState.updateOne({ _id: gameStateID }, {
+        $set: {
+          allItemsClaimed: true,
+          vortexEnabled: false,
+        },
       });
     }
   }
+};
+
+const updateEndTime = async (gameStateID, endTileID, rotateActions, models) => {
+  const newEndTime = new Date(new Date().getTime() + TIME);
+  pubsub.publish(ENDTIME_UPDATED, { endTimeUpdated: newEndTime, gameStateID });
+  await Promise.all([
+    models.GameState.updateOne({
+      _id: gameStateID,
+    },
+    {
+      $set: {
+        endTime: newEndTime,
+        actions: rotateActions,
+      },
+    }),
+    models.Tile.updateOne({
+      _id: endTileID,
+      gameStateID,
+      used: false,
+    },
+    {
+      $set: {
+        used: true,
+      },
+    }),
+  ]);
 };
 
 const updateItemClaimed = async (gameStateID, endTile, characterColour, models) => {
@@ -100,7 +140,7 @@ const updateCharacterEscaped = async (gameStateID, endTile, characterColour, mod
   },
   {
     $set: {
-      'characters.$.itemClaimed': endTile.type === EXIT_TYPE,
+      'characters.$.characterEscaped': endTile.type === EXIT_TYPE,
     },
   });
 };
@@ -118,67 +158,71 @@ const updateTileOrientation = async (gameStateID, nextMazeTileID, orientation, m
   }));
 };
 
-const setCoordinates = async (tileID, x, y, models) => {
-  const tile = await models.Tile.findOne({ _id: tileID });
-  if (tile && tile.coordinates === null) {
-    const coordinates = { x, y };
-    await models.Tile.updateOne({ _id: ObjectId(tile._id) }, { $set: { coordinates } });
-    await Promise.all(tile.neighbours.map(async (neighbour, index) => {
-      switch (index) {
-        case DIRECTIONS.UP:
-          await setCoordinates(ObjectId(neighbour), x, y - 1, models);
-          break;
-        case DIRECTIONS.LEFT:
-          await setCoordinates(ObjectId(neighbour), x - 1, y, models);
-          break;
-        case DIRECTIONS.DOWN:
-          await setCoordinates(ObjectId(neighbour), x, y + 1, models);
-          break;
-        case DIRECTIONS.RIGHT:
-          await setCoordinates(ObjectId(neighbour), x + 1, y, models);
-          break;
-        default:
-          break;
-      }
-    }));
-  }
+const setCoordinates = async (nextMazeTileID, cornerCoordinates, orientation, models) => {
+  const allTiles = await models.Tile.find({ mazeTileID: nextMazeTileID }).toArray();
+  await Promise.all(allTiles.map(async (tile) => {
+    // rotates the x and y coordinates
+    let rotateCoordinates;
+    switch (orientation) {
+      case DIRECTIONS.UP:
+        rotateCoordinates = tile.coordinates;
+        break;
+      case DIRECTIONS.LEFT:
+        rotateCoordinates = { x: tile.coordinates.y, y: Math.abs(tile.coordinates.x - 3) };
+        break;
+      case DIRECTIONS.DOWN:
+        rotateCoordinates = {
+          x: Math.abs(tile.coordinates.x - 3),
+          y: Math.abs(tile.coordinates.y - 3),
+        };
+        break;
+      case DIRECTIONS.RIGHT:
+        rotateCoordinates = { x: Math.abs(tile.coordinates.y - 3), y: tile.coordinates.x };
+        break;
+      default:
+        logger.error('Invalid direction');
+        throw Error('Invalid direction');
+    }
+    // adjusts the coordinates so they are relative to the mazeTile corner coords
+    const adjustedX = rotateCoordinates.x + cornerCoordinates.x;
+    const adjustedY = rotateCoordinates.y + cornerCoordinates.y;
+
+    await models.Tile.updateOne(
+      { _id: ObjectId(tile._id) },
+      { $set: { coordinates: { x: adjustedX, y: adjustedY } } },
+    );
+  }));
 };
 
 const updateAdjacentMazeTiles = async (
   gameStateID,
-  searchTileID,
-  entryTileID,
+  cornerCoordinates,
   nextMazeTileID,
+  usedMazeTiles,
   models,
 ) => {
-  // update the previous search and current entry tile's neighbours
-  await Promise.all([
-    models.Tile.findOneAndUpdate({
-      _id: searchTileID,
-      gameStateID,
-      neighbours: { $type: 10 },
-    }, {
-      $set: { 'neighbours.$': entryTileID, searched: true },
-    }),
-    models.Tile.findOneAndUpdate({
-      _id: entryTileID,
-      gameStateID,
-      neighbours: { $type: 10 },
-    }, {
-      $set: { 'neighbours.$': searchTileID },
-    }),
-  ]);
+  const updateResults = [];
 
-  // look for current maze tile's search tiles and update their neighbours if they exist
-  const searchTiles = await models.Tile.find({
+  // change array to be all 4 tiles where search/entry tiles `should` be
+  const coordsToSearch = [
+    { x: cornerCoordinates.x + 2, y: cornerCoordinates.y },
+    { x: cornerCoordinates.x, y: cornerCoordinates.y + 1 },
+    { x: cornerCoordinates.x + 1, y: cornerCoordinates.y + 3 },
+    { x: cornerCoordinates.x + 3, y: cornerCoordinates.y + 2 },
+  ];
+
+  const tilesToSearch = await models.Tile.find({
     gameStateID,
     mazeTileID: nextMazeTileID,
-    type: SEARCH_TYPE,
-    searched: false,
+    coordinates: { $in: coordsToSearch },
   }).toArray();
-  // not a promise so we don't need await Promise.all(...)
-  searchTiles.forEach(async (tile) => {
-    const direction = _.findIndex(tile.neighbours, t => t === null);
+
+  tilesToSearch.forEach(async (tile) => {
+    // use index in coordsToSearch array as the direction
+    const direction = _.findIndex(
+      coordsToSearch,
+      c => (c.x === tile.coordinates.x && c.y === tile.coordinates.y),
+    );
     let coordinatesToFind;
     switch (direction) {
       case DIRECTIONS.UP:
@@ -194,49 +238,74 @@ const updateAdjacentMazeTiles = async (
         coordinatesToFind = { x: tile.coordinates.x + 1, y: tile.coordinates.y };
         break;
       default:
-        throw Error('Search tile is already used');
+        logger.error('Current tile does not exist');
+        throw Error('Current tile does not exist');
     }
 
     // update adjacent tiles if they exist
-    // not sure if this syntax works
-    const adjTile = await models.Tile.findOneAndUpdate({
+    const adjTile = await models.Tile.findOne({
       gameStateID,
+      mazeTileID: { $in: usedMazeTiles },
       coordinates: coordinatesToFind,
-      neighbours: { $type: 10 },
-    }, {
-      $set: {
-        searched: true,
-        'neighbours.$': tile._id,
-      },
     });
 
     // update current maze tile's tile neighbour with adjacent
     if (adjTile) {
-      await models.Tile.findOneAndUpdate({
-        gameStateID,
-        _id: tile._id,
-        neighbours: { $type: 10 },
-      }, {
-        $set: {
-          searched: true,
-          'neighbours.$': adjTile._id,
-        },
-      });
+      // current and adjacent tiles are both search types, or current is an entry type
+      if (adjTile.type === SEARCH_TYPE && (tile.type === SEARCH_TYPE || tile.type === ENTRY_TYPE)) {
+        const updateParams = { 'neighbours.$': adjTile._id };
+        if (tile.type === SEARCH_TYPE) updateParams.searched = true;
+
+        // add if to differentiate entry and search type
+        updateResults.push(
+          models.Tile.findOneAndUpdate({
+            _id: adjTile._id,
+            gameStateID,
+            neighbours: { $type: 10 },
+          }, {
+            $set: { 'neighbours.$': tile._id, searched: true },
+          }),
+          models.Tile.findOneAndUpdate({
+            _id: tile._id,
+            gameStateID,
+            neighbours: { $type: 10 },
+          }, {
+            $set: updateParams,
+          }),
+        );
+      } else {
+        // either current or adjacent tile is a search type and the other is not
+        updateResults.push(
+          models.Tile.findOneAndUpdate({
+            _id: adjTile._id,
+            gameStateID,
+            type: SEARCH_TYPE,
+          }, {
+            $set: { searched: true },
+          }),
+          models.Tile.findOneAndUpdate({
+            _id: tile._id,
+            gameStateID,
+            type: SEARCH_TYPE,
+          }, {
+            $set: { searched: true },
+          }),
+        );
+      }
     }
   });
+
+  await Promise.all(updateResults);
 };
 
 const setCornerCoordinate = async (
   gameStateID,
-  entryTileID,
+  coordinates,
   entryTileDir,
   nextMazeTileID,
   models,
 ) => {
   let cornerCoordinates;
-  const { coordinates } = await models.Tile.findOne({
-    _id: entryTileID,
-  }, { _id: 0, coordinates: 1 });
 
   switch (entryTileDir) {
     case DIRECTIONS.UP:
@@ -255,18 +324,66 @@ const setCornerCoordinate = async (
       break;
   }
 
-  await models.GameState.findOneAndUpdate({
+  const gs = await models.GameState.findOneAndUpdate({
     _id: gameStateID,
     'mazeTiles._id': nextMazeTileID,
   }, {
     $set: {
       'mazeTiles.$.cornerCoordinates': cornerCoordinates,
     },
-  });
+  }, { returnOriginal: false });
+
+  return _.find(gs.value.mazeTiles, mt => ObjectId(mt._id).equals(ObjectId(nextMazeTileID)));
 };
 
 module.exports = {
   Query: {
+  },
+  Subscription: {
+    allItemsClaimed: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator([ALL_ITEMS_CLAIMED]),
+        ({ gameStateID }, variables) => (
+          ObjectId(gameStateID).equals(ObjectId(variables.gameStateID))
+        ),
+      ),
+    },
+    endTimeUpdated: {
+      // Additional event labels can be passed to asyncIterator creation
+      subscribe: withFilter(
+        () => pubsub.asyncIterator([ENDTIME_UPDATED]),
+        ({ gameStateID }, variables) => (
+          ObjectId(gameStateID).equals(ObjectId(variables.gameStateID))
+        ),
+      ),
+    },
+    endGame: {
+      // Additional event labels can be passed to asyncIterator creation
+      subscribe: withFilter(
+        () => pubsub.asyncIterator([END_GAME]),
+        ({ gameStateID }, variables) => (
+          ObjectId(gameStateID).equals(ObjectId(variables.gameStateID))
+        ),
+      ),
+    },
+    mazeTileAdded: {
+      // Additional event labels can be passed to asyncIterator creation
+      subscribe: withFilter(
+        () => pubsub.asyncIterator([MAZETILE_ADDED]),
+        ({ gameStateID }, variables) => (
+          ObjectId(gameStateID).equals(ObjectId(variables.gameStateID))
+        ),
+      ),
+    },
+    characterUpdated: {
+      // Additional event labels can be passed to asyncIterator creation
+      subscribe: withFilter(
+        () => pubsub.asyncIterator([CHARACTER_COORDINATES_UPDATED, CHARACTER_LOCK]),
+        ({ gameStateID }, variables) => (
+          ObjectId(gameStateID).equals(ObjectId(variables.gameStateID))
+        ),
+      ),
+    },
   },
   Mutation: {
     moveCharacter: async (_parent, {
@@ -275,34 +392,27 @@ module.exports = {
       characterColour,
       endTileCoords,
     }, { models }) => {
-      /**
-       * Thinking about having a switch case here or something to
-       * determine which action the character performed
-       * Actions that can happen:
-       * Vortex - Make sure both are vortex
-       * Escalator - Make sure both are escalator on same mazeTile
-       * Move - (up, down, left, right)
-       *
-       * Also here we need to check if all characters are on top of items
-       * which will prob happen when the character moves on to an item
-       * we will then check the rest to see if they are on an item too
-       *
-       * Something similar will happen when they are running exits
-       *
-       * Basically a lot of helper functions will need to be here
-       */
-
       let direction;
 
       const gameState = await models.GameState.findOne({ _id: ObjectId(gameStateID) });
       const character = _.find(gameState.characters, char => char.colour === characterColour);
+      const userIndex = _.findIndex(gameState.users, user => (user.uid === userID));
+
+      if (userIndex === -1) throw Error('User does not exist in game');
+
+      const usedMazeTiles = _.reduce(gameState.mazeTiles, (array, mt) => {
+        if (mt.cornerCoordinates) array.push(ObjectId(mt._id));
+        return array;
+      }, []);
 
       const startTile = await models.Tile.findOne({
         gameStateID: ObjectId(gameStateID),
+        mazeTileID: { $in: usedMazeTiles },
         coordinates: character.coordinates,
       });
       const endTile = await models.Tile.findOne({
         gameStateID: ObjectId(gameStateID),
+        mazeTileID: { $in: usedMazeTiles },
         coordinates: endTileCoords,
       });
 
@@ -311,93 +421,95 @@ module.exports = {
         throw Error('Start and/or End Tiles, Character or Game State does not exist');
       }
 
-      let shouldMove = false;
+      let specialMovement = false;
       let movedStraightLine = false;
 
-      if (startTile.type === VORTEX_TYPE && endTile.type === VORTEX_TYPE) {
+      // checks for vortex movement or escalator movement
+      if (startTile.type === VORTEX_TYPE
+        && endTile.type === VORTEX_TYPE
+        && gameState.actions[userIndex].includes(Action.VORTEX)) {
         // Potentially vortex or escalator
-        shouldMove = vortexMovement(gameState, startTile, endTile, character);
-      } else if (startTile.type === ESCALATOR_TYPE && endTile.type === ESCALATOR_TYPE) {
-        shouldMove = escalatorMovement(startTile, endTile);
-      } else if (startTile.coordinates.y !== endTile.coordinates.y
+        specialMovement = vortexMovement(gameState, startTile, endTile, character);
+      } else if (startTile.type === ESCALATOR_TYPE
+        && endTile.type === ESCALATOR_TYPE
+        && gameState.actions[userIndex].includes(Action.ESCALATOR)) {
+        specialMovement = escalatorMovement(startTile, endTile);
+      }
+
+      // checks for horizontal or vertical movement
+      if (startTile.coordinates.y !== endTile.coordinates.y
         && startTile.coordinates.x === endTile.coordinates.x) {
         // Potentially up or down
         direction = startTile.coordinates.y > endTile.coordinates.y
           ? DIRECTIONS.UP
           : DIRECTIONS.DOWN;
-        shouldMove = await moveDirection(
-          gameState, character.colour, startTile, endTile, direction, models,
-        );
-        movedStraightLine = shouldMove;
+        if (gameState.actions[userIndex].includes(direction)) {
+          movedStraightLine = await moveDirection(
+            gameState, character.colour, startTile, endTile, direction, models,
+          );
+        }
       } else if (startTile.coordinates.x !== endTile.coordinates.x
         && startTile.coordinates.y === endTile.coordinates.y) {
         // Potentially left or right
         direction = startTile.coordinates.x > endTile.coordinates.x
           ? DIRECTIONS.LEFT
           : DIRECTIONS.RIGHT;
-        shouldMove = await moveDirection(
-          gameState, character.colour, startTile, endTile, direction, models,
-        );
-        movedStraightLine = shouldMove;
+        if (gameState.actions[userIndex].includes(direction)) {
+          movedStraightLine = await moveDirection(
+            gameState, character.colour, startTile, endTile, direction, models,
+          );
+        }
       }
 
-      if (movedStraightLine) {
-        if (!gameState.allItemsClaimed) {
+      if (movedStraightLine && !specialMovement) {
+        if (endTile.type === TIME_TYPE && !endTile.used) {
+          const rotateActions = rotateList(gameState.actions, 1);
+          await updateEndTime(ObjectId(gameStateID), ObjectId(endTile._id), rotateActions, models);
+        } else if (!gameState.allItemsClaimed) {
           await updateItemClaimed(ObjectId(gameStateID), endTile, character.colour, models);
-          await checkCharactersOnTile(gameState, ITEM_TYPE, models);
-        }
-        if (gameState.allItemsClaimed && !gameState.allCharactersEscaped) {
-          await updateCharacterEscaped(ObjectId(gameStateID), character, endTile, models);
-          await checkCharactersOnTile(gameState, EXIT_TYPE, models);
+          await checkCharactersOnTile(ObjectId(gameStateID), ITEM_TYPE, models);
+        } else if (endTile.type === EXIT_TYPE
+          && gameState.allItemsClaimed
+          && !gameState.allCharactersEscaped) {
+          await updateCharacterEscaped(ObjectId(gameStateID), endTile, character.colour, models);
+          await checkCharactersOnTile(ObjectId(gameStateID), EXIT_TYPE, models);
         }
       }
 
-      if (shouldMove) {
-        // update character
-        const { coordinates } = endTile;
-        // update to db
-        await models.GameState.updateOne({
-          _id: ObjectId(gameStateID),
-          'characters.colour': characterColour,
+      const { coordinates } = specialMovement || movedStraightLine ? endTile : startTile;
+      // update to db
+      const updatedGameState = await models.GameState.findOneAndUpdate({
+        _id: ObjectId(gameStateID),
+        'characters.colour': characterColour,
+      },
+      {
+        $set: {
+          'characters.$.coordinates': coordinates,
+          'characters.$.locked': null,
         },
-        {
-          $set: {
-            'characters.$.coordinates': coordinates,
-          },
-        });
-      }
+      },
+      { returnOriginal: false });
 
-      const gs = await models.GameState.findOne({ _id: ObjectId(gameStateID) });
-      return _.find(gs.characters, char => char.colour === characterColour);
+      const updatedChar = _.find(updatedGameState.value.characters,
+        char => char.colour === characterColour);
+
+      pubsub.publish(CHARACTER_COORDINATES_UPDATED,
+        { characterUpdated: updatedChar, gameStateID });
+
+      return updatedChar;
     },
     searchAction: async (_parent, {
       gameStateID,
+      userID,
       characterCoords,
     }, { models }) => {
-      /**
-       * First we must check there are tile to pop out of gameState
-       *
-       * After that, we pop the next tile from the gameState and find out where
-       * its entry tile is located (like which side it's on), then we must line
-       * up the entry tile with the search `tile` that was passed in
-       *
-       * After finding the orientation, we update the MazeTile with the new
-       * orientation and then update the tiles inside of it so that their
-       * neighbours are properly oriented
-       *
-       * After that we must traverse through the tiles and update coordinates
-       *
-       * After we will look for the edge case where the new mazetile lines up
-       * with another mazetile separate from the one they came from (use the
-       * unused_search from gameState)
-       *
-       * After we will update mazetile adjacent maze tiles
-       *
-       * in the end we return game state
-       */
-
       const gameState = await models.GameState
         .findOne({ _id: ObjectId(gameStateID) });
+      const userIndex = _.findIndex(gameState.users, user => (user.uid === userID));
+
+      if (userIndex === -1) throw Error('User does not exist in game');
+      if (!gameState.actions[userIndex].includes(Action.SEARCH)) throw Error('User cannot perform the search action');
+
       const character = _.find(gameState.characters, char => (
         char.coordinates.x === characterCoords.x
         && char.coordinates.y === characterCoords.y
@@ -407,12 +519,17 @@ module.exports = {
           gameStateID: ObjectId(gameStateID),
           coordinates: characterCoords,
           type: SEARCH_TYPE,
+          searched: false,
           colour: character.colour,
         });
       const nextMazeTile = _.find(gameState.mazeTiles, mt => !mt.cornerCoordinates);
 
-      if (!searchTile || nextMazeTile === undefined) throw Error('Search tile or next maze tile doesn\'t exist');
+      if (!searchTile || nextMazeTile === undefined) throw Error('Could not search for a new maze tile');
 
+      const usedMazeTiles = _.reduce(gameState.mazeTiles, (array, mt) => {
+        if (mt.cornerCoordinates) array.push(ObjectId(mt._id));
+        return array;
+      }, []);
       const searchTileDir = _.findIndex(searchTile.neighbours, neighbour => neighbour === null);
 
       const entryTile = await models.Tile.findOne({
@@ -454,29 +571,91 @@ module.exports = {
           break;
       }
 
-      // Set coordinates for tiles
-      await setCoordinates(ObjectId(entryTile._id), coord.x, coord.y, models);
-
-      // Need to check the edge cases for adjacent mazetiles and update them
-      await updateAdjacentMazeTiles(
-        ObjectId(gameStateID),
-        ObjectId(searchTile._id),
-        ObjectId(entryTile._id),
-        ObjectId(nextMazeTile._id),
-        models,
-      );
-
       // update the cornerCoordinates of the nextMazeTile
-      await setCornerCoordinate(
+      const coordSetMazeTile = await setCornerCoordinate(
         ObjectId(gameStateID),
-        ObjectId(entryTile._id),
+        { x: coord.x, y: coord.y },
         entryTileDir,
         ObjectId(nextMazeTile._id),
         models,
       );
 
-      const gs = await models.GameState.findOne({ _id: ObjectId(gameStateID) });
-      return _.find(gs.mazeTiles, mt => mt.spriteID === nextMazeTile.spriteID);
+      // Set coordinates for tiles
+      await setCoordinates(
+        ObjectId(coordSetMazeTile._id),
+        coordSetMazeTile.cornerCoordinates,
+        orientation,
+        models,
+      );
+
+      // Need to check the edge cases for adjacent mazetiles and update them
+      await updateAdjacentMazeTiles(
+        ObjectId(gameStateID),
+        coordSetMazeTile.cornerCoordinates,
+        ObjectId(coordSetMazeTile._id),
+        usedMazeTiles,
+        models,
+      );
+      const updatedGameState = await models.GameState.findOneAndUpdate({
+        _id: ObjectId(gameStateID),
+        'characters.colour': character.colour,
+      },
+      {
+        $set: {
+          'characters.$.locked': null,
+        },
+      },
+      { returnOriginal: false });
+
+      const mazeTile = _.find(updatedGameState.value.mazeTiles,
+        mt => ObjectId(mt._id).equals(nextMazeTile._id));
+      const updatedChar = _.find(updatedGameState.value.characters,
+        char => char.colour === character.colour);
+      pubsub.publish(CHARACTER_COORDINATES_UPDATED,
+        { characterUpdated: updatedChar, gameStateID });
+      pubsub.publish(MAZETILE_ADDED, { mazeTileAdded: mazeTile, gameStateID });
+      return mazeTile;
+    },
+    lockCharacter: async (_parent, {
+      gameStateID,
+      userID,
+      characterColour,
+    }, { models }) => {
+      const { characters } = await models.GameState.findOne({
+        _id: ObjectId(gameStateID),
+        'characters.colour': characterColour,
+      });
+
+      const character = _.find(characters, char => char.colour === characterColour);
+      const hasAnotherLock = _.find(characters, char => char.locked === userID);
+      if (hasAnotherLock > -1) return character;
+
+      if (!character.locked) {
+        character.locked = userID;
+      } else if (character.locked === userID) {
+        character.locked = null;
+      } else {
+        return character;
+      }
+
+      const updatedGameState = await models.GameState.findOneAndUpdate({
+        _id: ObjectId(gameStateID),
+        'characters.colour': characterColour,
+      },
+      {
+        $set: {
+          'characters.$.locked': character.locked,
+        },
+      },
+      { returnOriginal: false });
+
+      const updatedChar = _.find(updatedGameState.value.characters,
+        char => char.colour === characterColour);
+
+      pubsub.publish(CHARACTER_LOCK,
+        { characterUpdated: updatedChar, gameStateID });
+
+      return updatedChar;
     },
   },
 };

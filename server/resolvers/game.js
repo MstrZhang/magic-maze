@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const mongoose = require('mongoose');
+const { PubSub, withFilter } = require('apollo-server-express');
 
 const { ObjectId } = mongoose.Types;
 const logger = require('../common/logger');
@@ -10,7 +11,10 @@ const {
   CHARACTER_COLOR_CONFIG,
   CHARACTER_COORDINATES_CONFIG,
   TIME,
+  CREATED_GAMESTATE,
 } = require('../common/consts');
+
+const pubsub = new PubSub();
 
 const mazeTileCreation = async (gameStateID, models) => {
   const mazeTileResult = [];
@@ -30,7 +34,7 @@ const mazeTileCreation = async (gameStateID, models) => {
     // constant used for all wall edges between different tiles
     const wallConst = {
       _id: ObjectId(),
-      mazeTile: mazeTile._id,
+      mazeTileID: mazeTile._id,
       gameStateID,
       coordinates: null,
       neighbours: [],
@@ -90,9 +94,12 @@ module.exports = {
       .findOne({ _id: ObjectId(gameStateID) }),
   },
   Mutation: {
-    createGameState: async (_parent, _args, { models }) => {
+    createGameState: async (_parent, { lobbyID }, { models }) => {
       await mongoose.connect(process.env.MONGODB_DEV, { useNewUrlParser: true });
+      const lobby = await models.Lobby.findOne({ _id: ObjectId(lobbyID) });
 
+      let actions = await models.ActionCard.find({ playerCount: lobby.users.length }).toArray();
+      actions = shuffle(actions.map(action => action.actions));
       // create gameState object and get ID
       const initialGameState = {
         vortexEnabled: true,
@@ -101,29 +108,41 @@ module.exports = {
         endTime: new Date(new Date().getTime() + TIME),
         mazeTiles: [],
         characters: [],
+        actions,
+        users: lobby.users,
       };
 
-      const session = await mongoose.startSession();
-      session.startTransaction();
-      try {
-        const gameState = await models.GameState.insertOne({ ...initialGameState });
+      const gameState = await models.GameState.insertOne({ ...initialGameState });
 
-        const characters = characterCreation(gameState.insertedId, models);
+      const characters = characterCreation(gameState.insertedId, models);
 
-        const allMazeTiles = await mazeTileCreation(gameState.insertedId, models);
+      const allMazeTiles = await mazeTileCreation(gameState.insertedId, models);
 
-        const mazeTiles = await appendMazeTiles(gameState.insertedId, allMazeTiles, models);
+      const mazeTiles = await appendMazeTiles(gameState.insertedId, allMazeTiles, models);
 
-        await Promise.all([characters, mazeTiles]);
-        await session.commitTransaction();
-        session.endSession();
-        return await models.GameState.findOne({ _id: gameState.insertedId });
-      } catch (err) {
-        logger.error(err);
-        await session.abortTransaction();
-        session.endSession();
-        throw err;
+      await Promise.all([characters, mazeTiles]);
+
+      pubsub.publish(CREATED_GAMESTATE, { createdGameState: gameState.insertedId, lobbyID });
+      return gameState.insertedId;
+    },
+    deleteGameState: async (_parent, { gameStateID }, { models }) => {
+      const deleteGS = await models.GameState.deleteOne({ _id: ObjectId(gameStateID) });
+      if (deleteGS.deletedCount > 0) {
+        await models.Tile.deleteMany({ gameStateID: ObjectId(gameStateID) });
+        return true;
       }
+      return false;
+    },
+  },
+  Subscription: {
+    createdGameState: {
+      // Additional event labels can be passed to asyncIterator creation
+      subscribe: withFilter(
+        () => pubsub.asyncIterator([CREATED_GAMESTATE]),
+        ({ lobbyID }, variables) => (
+          ObjectId(lobbyID).equals(ObjectId(variables.lobbyID))
+        ),
+      ),
     },
   },
 };

@@ -4,7 +4,7 @@
 
 .sidenav{
   height: 100%;
-  width: 150px;
+  width: 200px;
   position: fixed;
   z-index: 1;
   top: 0;
@@ -21,11 +21,35 @@
   align-items: center;
 }
 
-.player {
-  height: 100px;
-  width: 100px;
+.timer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #DF5A49;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  font-size: 36px;
+  font-family: monospace;
+  padding: 0 10px 0 10px;
+}
+
+.message {
+  position: absolute;
+  background-color: #45B29D;
   border-radius: 5px;
-  background-color: #EFC94C;
+  padding: 10px;
+  bottom: 10px;
+  left: 40%;
+  opacity: 0.8;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+
+.player {
+  display: flex;
+  flex-direction: column;
+  height: 160px;
+  width: 160px;
+  border-radius: 5px;
+  background-color: #45B29D;
   margin: 2em 0 2em 0;
   box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 }

@@ -10,10 +10,14 @@
     "apollo-boost": "^0.3.1",
     "apollo-cache-inmemory": "^1.5.1",
     "apollo-client": "^2.5.1",
+    "apollo-link": "^1.2.11",
     "apollo-link-http": "^1.5.14",
+    "apollo-link-ws": "^1.0.17",
+    "apollo-utilities": "^1.2.1",
     "babel-plugin-idx": "^2.4.0",
     "bootstrap": "^4.3.1",
     "dotenv": "^7.0.0",
+    "firebase": "^5.9.2",
     "graphql": "^14.1.1",
     "graphql-tag": "^2.10.1",
     "idx": "^2.5.4",
@@ -24,15 +28,23 @@
     "react": "^16.8.4",
     "react-apollo": "^2.5.2",
     "react-dom": "^16.8.4",
+    "react-redux": "^6.0.1",
     "react-router-dom": "^4.3.1",
-    "react-scripts": "2.1.5",
-    "reactstrap": "^7.1.0"
+    "react-scripts": "^2.1.8",
+    "react-toastify": "^5.0.0-rc.3",
+    "reactstrap": "^7.1.0",
+    "redux": "^4.0.1",
+    "redux-promise": "^0.6.0",
+    "redux-thunk": "^2.3.0",
+    "subscriptions-transport-ws": "^0.9.16",
+    "universal-cookie": "^3.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "./node_modules/.bin/eslint src/"
   },
   "eslintConfig": {
     "extends": "react-app"

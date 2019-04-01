@@ -1,0 +1,19 @@
+version: '3'
+services:
+  web:
+    # build: ../client/
+    image: itsmewiththeface/magicmaze-client:latest
+    ports:
+      - "80:5000"
+      - "443:5000"
+      - "3000:3000"
+    env_file:
+      - client_variables.env
+  api:
+    # build: ../server/
+    image: itsmewiththeface/magicmaze-server:latest
+    env_file:
+      - server_variables.env
+    ports:
+      - "8000:8000"
+      - "8443:8443"
