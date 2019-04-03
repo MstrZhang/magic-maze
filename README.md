@@ -15,7 +15,7 @@ Web-implementation developed by the team of:
 
 ### URLs
 
-Application: magicmaze.me
+Application: [magicmaze.me](https://magicmaze.me)
 
 Youtube Video: https://www.youtube.com/watch?v=JBg4oSQp03k
 
