@@ -17,6 +17,8 @@ Web-implementation developed by the team of:
 
 Application: magicmaze.me
 
+Youtube Video: https://www.youtube.com/watch?v=JBg4oSQp03k
+
 ### Overview
 
 [Magic Maze](https://boardgamegeek.com/boardgame/209778/magic-maze) is a real-time cooperative table-top game. Our implementation of the game will be for only 4 players and features the main, simplest "scenario" of the game. 
