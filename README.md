@@ -19,6 +19,8 @@ Application: [magicmaze.me](https://magicmaze.me)
 
 Youtube Video: https://www.youtube.com/watch?v=JBg4oSQp03k
 
+API Documentation: https://utscc09.github.io/project-magicmaze/schema/
+
 ### Overview
 
 [Magic Maze](https://boardgamegeek.com/boardgame/209778/magic-maze) is a real-time cooperative table-top game. Our implementation of the game will be for only 4 players and features the main, simplest "scenario" of the game. 
