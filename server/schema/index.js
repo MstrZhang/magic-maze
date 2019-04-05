@@ -9,58 +9,158 @@ const lobby = require('./lobby');
 const actionCard = require('./actionCard');
 
 const queries = gql`
+  """Root Query"""
   type Query {
-    # GameState
-    gameState(gameStateID: ID!): GameState
+    """Returns the GameState based of the gameStateID"""
+    gameState(
+      "ID of the current GameState"
+      gameStateID: ID!
+    ): GameState
 
-    # Lobby
-    lobby(lobbyID: ID!): Lobby!
+    """Returns the Lobby based of the lobbyID"""
+    lobby(
+      "ID of the current Lobby"
+      lobbyID: ID!
+    ): Lobby!
+
+    """Returns all the lobbies"""
     lobbies: [Lobby]!
   }
 `;
 
 const mutations = gql`
+  """Root Mutations"""
   type Mutation {
-    # GameState
-    createGameState(lobbyID: ID!): ID!
-    deleteGameState(gameStateID: ID!): Boolean
+    """Creates a new GameState based of the lobbyID"""
+    createGameState(
+      "ID of the current Lobby"
+      lobbyID: ID!
+    ): ID!
+    
+    """Deletes the GameState based of the gameStateID"""
+    deleteGameState(
+      "ID of the current gameState"
+      gameStateID: ID!
+    ): Boolean
   
-    # Character
-    lockCharacter(gameStateID: ID!, userID: String!, characterColour: String!): Character!
-    moveCharacter(
+    """Locks and unlocks the character to a specific user"""
+    lockCharacter(
+      "ID of the current GameState"
       gameStateID: ID!,
+
+      "ID of the current User"
       userID: String!,
+
+      "Colour of the selected character"
+      characterColour: String!
+    ): Character!
+    
+    """Moves the character if it's a valid move"""
+    moveCharacter(
+      "ID of the current GameState"
+      gameStateID: ID!,
+
+      "ID of the current User"
+      userID: String!,
+
+      "Colour of the selected character"
       characterColour: String!,
+
+      "Coordinates to move the character to"
       endTileCoords: CoordinatesInput!,
     ): Character!
-    searchAction(gameStateID: ID!, userID: String, characterCoords: CoordinatesInput!): MazeTile!
+    
+    """Searches for a new MazeTile piece if action is possible"""
+    searchAction(
+      "ID of the current GameState"
+      gameStateID: ID!,
+
+      "ID of the current User"
+      userID: String,
+      
+      "Coordinates of current character"
+      characterCoords: CoordinatesInput!
+    ): MazeTile!
   
-    # Lobby
-    createLobby(userID: ID!): Lobby!
-    deleteLobby(lobbyID: ID!, userID: String!): Boolean!
-    joinLobby(lobbyID: ID!, userID: String!): Lobby!
-    leaveLobby(lobbyID: ID!, userID: String!): Boolean!
+    """Creates a new lobby with the userID as creator"""
+    createLobby(
+      "ID of the current User"
+      userID: ID!
+    ): Lobby!
+    """Deletes a lobby as long as userID is in lobby"""
+    deleteLobby(
+      "ID of the current Lobby"
+      lobbyID: ID!,
+
+      "ID of the current User"
+      userID: String!
+    ): Boolean!
+    """Joins a lobby if space exists"""
+    joinLobby(
+      "ID of the current Lobby"
+      lobbyID: ID!,
+      
+      "ID of the current User"      
+      userID: String!
+    ): Lobby!
+    """Leaves a lobby"""
+    leaveLobby(
+      "ID of the current Lobby"
+      lobbyID: ID!,
+      
+      "ID of the current User"      
+      userID: String!
+    ): Boolean!
 
   }
 `;
 
 const subscriptions = gql`
+  """Root Subscriptions"""
   type Subscription {
     # GameState
-    createdGameState(lobbyID: ID!): ID!
-    endTimeUpdated(gameStateID: ID!): Date!
-    endGame(gameStateID: ID!): Boolean!
-    allItemsClaimed(gameStateID: ID!): Boolean!
+    """Subscriptions to game creation state"""
+    createdGameState(
+      "ID of the current Lobby"      
+      lobbyID: ID!
+    ): ID!
+    """Subscription for updating game end time"""
+    endTimeUpdated(
+      "ID of the current GameState"
+      gameStateID: ID!
+    ): Date!
+    """Subsription for updating users when they win the game"""
+    endGame(
+      "ID of the current GameState"
+      gameStateID: ID!
+    ): Boolean!
+    """Subscription for updating users when all characters have claimed all items"""
+    allItemsClaimed(
+      "ID of the current GameState"
+      gameStateID: ID!
+    ): Boolean!
 
     # MazeTile
-    mazeTileAdded(gameStateID: ID!): MazeTile!
+    """Subscription for adding in new maze tiles to the map"""
+    mazeTileAdded(
+      "ID of the current GameState"      
+      gameStateID: ID!
+    ): MazeTile!
   
     # Character
-    characterUpdated(gameStateID: ID!): Character!
+    """Subscription for updating character state"""
+    characterUpdated(
+      "ID of the current GameState"
+      gameStateID: ID!
+    ): Character!
 
-    # Lobby
+    """Subscription for updating existing lobbies"""
     lobbiesUpdated: [Lobby]!
-    lobbyUsersUpdated(lobbyID: ID!): Lobby!
+    """Subscription for updating a specfic lobby's users"""
+    lobbyUsersUpdated(
+      "ID of the current Lobby"
+      lobbyID: ID!
+    ): Lobby!
   }
 `;
 
